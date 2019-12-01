@@ -17,28 +17,42 @@ namespace Day01
 
             string[] lines = File.ReadAllLines(inputFile);
 
+            int[] masses = lines.Select(int.Parse).ToArray();
 
+            int fuel = masses.Select(x => GetFuel(x)).Sum();
 
-            int output1 = 0;
-
-
-
-            Console.WriteLine($"The answer is: {output1}");
+            Console.WriteLine($"The answer is: {fuel}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            int totalFuel = masses
+                .Select(GetFinalFuel)
+                .Sum();
 
-            int output2 = 0;
-
-
-
-            Console.WriteLine($"The answer is: {output2}");
-
+            Console.WriteLine($"The answer is: {totalFuel}");
 
             Console.WriteLine();
             Console.ReadKey();
+        }
+
+        static int GetFuel(int mass)
+        {
+            return (mass / 3) - 2;
+        }
+
+        static int GetFinalFuel(int mass)
+        {
+            int fuel = GetFuel(mass);
+            int totalFuel = 0;
+            while (fuel > 0)
+            {
+                totalFuel += fuel;
+                fuel = GetFuel(fuel);
+            }
+
+            return totalFuel;
         }
     }
 }
