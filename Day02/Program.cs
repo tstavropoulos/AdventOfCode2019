@@ -2,25 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AoCTools.IntCode;
+using State = AoCTools.IntCode.IntCode.State;
 
 namespace Day02
 {
     class Program
     {
         private const string inputFile = @"../../../../input02.txt";
-
-        private enum State
-        {
-            Continue = 0,
-            Terminate
-        }
-
-        private enum Instr
-        {
-            Add = 1,
-            Multiply = 2,
-            Terminate = 99
-        }
 
         static void Main(string[] args)
         {
@@ -29,67 +18,42 @@ namespace Day02
             Console.WriteLine();
 
             int[] initialRegs = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
-            int[] regs = (int[])initialRegs.Clone();
+            IntCode initialIntCode = new IntCode(initialRegs);
 
-            int instr = 0;
+            IntCode intCode = initialIntCode.Clone();
 
-            regs[1] = 12;
-            regs[2] = 2;
+            intCode[1] = 12;
+            intCode[2] = 2;
 
-            while (Execute(ref instr, regs) == State.Continue) ;
+            while (intCode.Execute() == State.Continue) ;
 
-            Console.WriteLine($"The answer is: {regs[0]}");
+            Console.WriteLine($"The answer is: {intCode[0]}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-            int matchingInput = FindMatch(initialRegs);
-
+            int matchingInput = FindMatch(initialIntCode);
             Console.WriteLine($"The answer is: {matchingInput}");
 
             Console.WriteLine();
             Console.ReadKey();
         }
 
-
-        private static State Execute(ref int instr, int[] regs)
-        {
-            switch ((Instr)regs[instr])
-            {
-                case Instr.Add:
-                    regs[regs[instr + 3]] = regs[regs[instr + 1]] + regs[regs[instr + 2]];
-                    instr += 4;
-                    return State.Continue;
-
-                case Instr.Multiply:
-                    regs[regs[instr + 3]] = regs[regs[instr + 1]] * regs[regs[instr + 2]];
-                    instr += 4;
-                    return State.Continue;
-
-                case Instr.Terminate:
-                    return State.Terminate;
-
-                default: throw new Exception($"Unsupported instruction: {regs[instr]}");
-            }
-        }
-
-        private static int FindMatch(int[] initialRegs)
+        private static int FindMatch(IntCode initialIntCode)
         {
             for (int noun = 0; noun < 100; noun++)
             {
                 for (int verb = 0; verb < 100; verb++)
                 {
-                    int[] regs = (int[])initialRegs.Clone();
+                    IntCode intCode = initialIntCode.Clone();
 
-                    regs[1] = noun;
-                    regs[2] = verb;
+                    intCode[1] = noun;
+                    intCode[2] = verb;
 
-                    int instr = 0;
+                    while (intCode.Execute() == State.Continue) ;
 
-                    while (Execute(ref instr, regs) == State.Continue) ;
-
-                    if (regs[0] == 19690720)
+                    if (intCode[0] == 19690720)
                     {
                         return 100 * noun + verb;
                     }
