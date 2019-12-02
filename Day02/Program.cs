@@ -15,26 +15,112 @@ namespace Day02
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            string[] lines = File.ReadAllLines(inputFile);
+            {
+                int[] values = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
 
+                int currentIndex = 0;
+                bool cont = true;
 
+                values[1] = 12;
+                values[2] = 2;
+                while (cont)
+                {
+                    switch (values[currentIndex])
+                    {
 
-            int output1 = 0;
+                        case 1:
+                            //Add
+                            values[values[currentIndex + 3]] = values[values[currentIndex + 1]] + values[values[currentIndex + 2]];
+                            currentIndex += 4;
+                            break;
 
+                        case 2:
+                            //Multiply
+                            values[values[currentIndex + 3]] = values[values[currentIndex + 1]] * values[values[currentIndex + 2]];
+                            currentIndex += 4;
+                            break;
 
+                        case 99:
+                            cont = false;
+                            break;
 
-            Console.WriteLine($"The answer is: {output1}");
+                        default: throw new Exception();
+                    }
+                }
+
+                Console.WriteLine($"The answer is: {values[0]}");
+            }
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            int finalNoun = 0;
+            int finalVerb = 0;
+            bool done = false;
+            {
+                int[] initialValues = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
 
-            int output2 = 0;
+                for (int noun = 0; noun < 100; noun++)
+                {
+                    for (int verb = 0; verb < 100; verb++)
+                    {
+
+                        int[] values = (int[])initialValues.Clone();
+
+                        values[1] = noun;
+                        values[2] = verb;
+
+                        int currentIndex = 0;
+                        bool cont = true;
+
+                        while (cont)
+                        {
+                            switch (values[currentIndex])
+                            {
+                                case 1:
+                                    //Add
+                                    values[values[currentIndex + 3]] = values[values[currentIndex + 1]] + values[values[currentIndex + 2]];
+                                    currentIndex += 4;
+                                    break;
+
+                                case 2:
+                                    //Multiply
+                                    values[values[currentIndex + 3]] = values[values[currentIndex + 1]] * values[values[currentIndex + 2]];
+                                    currentIndex += 4;
+                                    break;
+
+                                case 99:
+                                    cont = false;
+                                    break;
+
+                                default: throw new Exception();
+                            }
+                        }
+
+                        if (values[0] == 19690720)
+                        {
+                            done = true;
+                            finalNoun = noun;
+                            finalVerb = verb;
+                        }
+
+                        if(done)
+                        {
+                            break;
+                        }
+
+                    }
+
+                    if (done)
+                    {
+                        break;
+                    }
+                }
+            }
 
 
-
-            Console.WriteLine($"The answer is: {output2}");
+            Console.WriteLine($"The answer is: {100 * finalNoun + finalVerb}");
 
 
             Console.WriteLine();
