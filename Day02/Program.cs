@@ -9,122 +9,94 @@ namespace Day02
     {
         private const string inputFile = @"../../../../input02.txt";
 
+        private enum State
+        {
+            Continue = 0,
+            Terminate
+        }
+
+        private enum Instr
+        {
+            Add = 1,
+            Multiply = 2,
+            Terminate = 99
+        }
+
         static void Main(string[] args)
         {
             Console.WriteLine("Day 2");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            {
-                int[] values = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
+            int[] initialRegs = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
+            int[] regs = (int[])initialRegs.Clone();
 
-                int currentIndex = 0;
-                bool cont = true;
+            int instr = 0;
 
-                values[1] = 12;
-                values[2] = 2;
-                while (cont)
-                {
-                    switch (values[currentIndex])
-                    {
+            regs[1] = 12;
+            regs[2] = 2;
 
-                        case 1:
-                            //Add
-                            values[values[currentIndex + 3]] = values[values[currentIndex + 1]] + values[values[currentIndex + 2]];
-                            currentIndex += 4;
-                            break;
+            while (Execute(ref instr, regs) == State.Continue) ;
 
-                        case 2:
-                            //Multiply
-                            values[values[currentIndex + 3]] = values[values[currentIndex + 1]] * values[values[currentIndex + 2]];
-                            currentIndex += 4;
-                            break;
-
-                        case 99:
-                            cont = false;
-                            break;
-
-                        default: throw new Exception();
-                    }
-                }
-
-                Console.WriteLine($"The answer is: {values[0]}");
-            }
+            Console.WriteLine($"The answer is: {regs[0]}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-            int finalNoun = 0;
-            int finalVerb = 0;
-            bool done = false;
+            int matchingInput = FindMatch(initialRegs);
+
+            Console.WriteLine($"The answer is: {matchingInput}");
+
+            Console.WriteLine();
+            Console.ReadKey();
+        }
+
+
+        private static State Execute(ref int instr, int[] regs)
+        {
+            switch ((Instr)regs[instr])
             {
-                int[] initialValues = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
+                case Instr.Add:
+                    regs[regs[instr + 3]] = regs[regs[instr + 1]] + regs[regs[instr + 2]];
+                    instr += 4;
+                    return State.Continue;
 
-                for (int noun = 0; noun < 100; noun++)
+                case Instr.Multiply:
+                    regs[regs[instr + 3]] = regs[regs[instr + 1]] * regs[regs[instr + 2]];
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.Terminate:
+                    return State.Terminate;
+
+                default: throw new Exception($"Unsupported instruction: {regs[instr]}");
+            }
+        }
+
+        private static int FindMatch(int[] initialRegs)
+        {
+            for (int noun = 0; noun < 100; noun++)
+            {
+                for (int verb = 0; verb < 100; verb++)
                 {
-                    for (int verb = 0; verb < 100; verb++)
+                    int[] regs = (int[])initialRegs.Clone();
+
+                    regs[1] = noun;
+                    regs[2] = verb;
+
+                    int instr = 0;
+
+                    while (Execute(ref instr, regs) == State.Continue) ;
+
+                    if (regs[0] == 19690720)
                     {
-
-                        int[] values = (int[])initialValues.Clone();
-
-                        values[1] = noun;
-                        values[2] = verb;
-
-                        int currentIndex = 0;
-                        bool cont = true;
-
-                        while (cont)
-                        {
-                            switch (values[currentIndex])
-                            {
-                                case 1:
-                                    //Add
-                                    values[values[currentIndex + 3]] = values[values[currentIndex + 1]] + values[values[currentIndex + 2]];
-                                    currentIndex += 4;
-                                    break;
-
-                                case 2:
-                                    //Multiply
-                                    values[values[currentIndex + 3]] = values[values[currentIndex + 1]] * values[values[currentIndex + 2]];
-                                    currentIndex += 4;
-                                    break;
-
-                                case 99:
-                                    cont = false;
-                                    break;
-
-                                default: throw new Exception();
-                            }
-                        }
-
-                        if (values[0] == 19690720)
-                        {
-                            done = true;
-                            finalNoun = noun;
-                            finalVerb = verb;
-                        }
-
-                        if(done)
-                        {
-                            break;
-                        }
-
-                    }
-
-                    if (done)
-                    {
-                        break;
+                        return 100 * noun + verb;
                     }
                 }
             }
 
-
-            Console.WriteLine($"The answer is: {100 * finalNoun + finalVerb}");
-
-
-            Console.WriteLine();
-            Console.ReadKey();
+            throw new Exception("Result not found");
         }
     }
 }

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day01 - The Tyranny of the Rocket Equation", "Day01\Day01 - The Tyranny of the Rocket Equation.csproj", "{D57D930F-DEC1-482D-9B77-16916ED7A093}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day02", "Day02\Day02.csproj", "{4F900406-4EB7-4D2C-AE31-95E2FDDC107C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day02 - 1202 Program Alarm", "Day02\Day02 - 1202 Program Alarm.csproj", "{4F900406-4EB7-4D2C-AE31-95E2FDDC107C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day03", "Day03\Day03.csproj", "{D8B439A6-0D20-4ABD-AFF0-33103B5014FE}"
 EndProject
