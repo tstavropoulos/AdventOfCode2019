@@ -19,7 +19,7 @@ namespace Day01
 
             int[] masses = lines.Select(int.Parse).ToArray();
 
-            int fuel = masses.Select(x => GetFuel(x)).Sum();
+            int fuel = masses.Select(GetFuel).Sum();
 
             Console.WriteLine($"The answer is: {fuel}");
 
