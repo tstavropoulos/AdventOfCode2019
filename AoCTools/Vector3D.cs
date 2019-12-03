@@ -13,12 +13,29 @@ namespace AoCTools
         public static readonly Vector3D YAxis = new Vector3D(0.0, 1.0, 0.0);
         public static readonly Vector3D ZAxis = new Vector3D(0.0, 0.0, 1.0);
 
+        public double Length => Math.Sqrt(x * x + y * y + z * z);
+
+        public Point2D ToPoint2D => new Point2D((int)x, (int)y);
+        public Point3D ToPoint3D => new Point3D((int)x, (int)y, (int)z);
+        public LongPoint2D ToLongPoint2D => new LongPoint2D((long)x, (long)y);
+        public LongPoint3D ToLongPoint3D => new LongPoint3D((long)x, (long)y, (long)z);
+        public Vector2D ToVector2D => new Vector2D(x, y);
+
+        public Vector3D Normalized => this / Length;
+
         public Vector3D(double x, double y, double z)
         {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+
+        public double Dot(in Vector3D other) => x * other.x + y * other.y + z * other.z;
+        public Vector3D Cross(in Vector3D other) =>
+            new Vector3D(
+                x: y * other.z - z * other.y,
+                y: z * other.x - x * other.z,
+                z: x * other.y - y * other.x);
 
         public static implicit operator Vector3D((double x, double y, double z) point) =>
             new Vector3D(point.x, point.y, point.z);
@@ -58,6 +75,11 @@ namespace AoCTools
         public static Vector3D operator /(in Vector3D lhs, double rhs) =>
             new Vector3D(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
 
-        public double Length => Math.Sqrt(x * x + y * y + z * z);
+        public void Deconstruct(out double x, out double y, out double z)
+        {
+            x = this.x;
+            y = this.y;
+            z = this.z;
+        }
     }
 }

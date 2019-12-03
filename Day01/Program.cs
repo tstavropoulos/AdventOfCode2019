@@ -11,7 +11,7 @@ namespace Day01
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 1");
+            Console.WriteLine("Day 1 - The Tyranny of the Rockey Equation");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 

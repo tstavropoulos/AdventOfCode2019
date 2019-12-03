@@ -13,7 +13,7 @@ namespace Day02
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 2");
+            Console.WriteLine("Day 2 - 1202 Program Alarm");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
