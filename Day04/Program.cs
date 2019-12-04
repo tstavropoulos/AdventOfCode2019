@@ -16,35 +16,33 @@ namespace Day04
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            int count = 0;
+            int countA = 0;
+            int countB = 0;
 
             for (int i = lowerBound; i <= upperBound; i++)
             {
                 string value = i.ToString();
-                if (SatisfiesRulesA(value) && SatisfiesRulesB(value))
+                if (SatisfiesRulesB(value))
                 {
-                    count++;
+                    if (SatisfiesRulesA(value))
+                    {
+                        countA++;
+
+                        if (SatisfiesRulesC(value))
+                        {
+                            countB++;
+                        }
+                    }
                 }
             }
 
-            Console.WriteLine($"The number of matching passwords is: {count}");
+            Console.WriteLine($"The number of matching passwords is: {countA}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-            count = 0;
-
-            for (int i = lowerBound; i <= upperBound; i++)
-            {
-                string value = i.ToString();
-                if (SatisfiesRulesB(value) && SatisfiesRulesC(value))
-                {
-                    count++;
-                }
-            }
-
-            Console.WriteLine($"The new number of matching passwords is: {count}");
+            Console.WriteLine($"The new number of matching passwords is: {countB}");
 
             Console.WriteLine();
             Console.ReadKey();
