@@ -10,8 +10,6 @@ namespace Day04
         private const int lowerBound = 108457;
         private const int upperBound = 562041;
 
-        private static Dictionary<char, int> matchingDigits = new Dictionary<char, int>();
-
         static void Main(string[] args)
         {
             Console.WriteLine("Day 4 - Secure Container");
@@ -35,7 +33,6 @@ namespace Day04
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-
             count = 0;
 
             for (int i = lowerBound; i <= upperBound; i++)
@@ -53,12 +50,11 @@ namespace Day04
             Console.ReadKey();
         }
 
-
         private static bool SatisfiesRulesA(string value)
         {
             for (int i = 0; i < value.Length - 1; i++)
             {
-                if (value[i] == value[i+1])
+                if (value[i] == value[i + 1])
                 {
                     return true;
                 }
@@ -82,23 +78,25 @@ namespace Day04
 
         private static bool SatisfiesRulesC(string value)
         {
-            matchingDigits.Clear();
-            for (int i = 0; i < value.Length - 1; i++)
+            int count = 1;
+            for (int i = 1; i < value.Length; i++)
             {
-                if (value[i] == value[i + 1])
+                if (value[i] == value[i-1])
                 {
-                    if (matchingDigits.ContainsKey(value[i]))
+                    count++;
+                }
+                else
+                {
+                    if (count == 2)
                     {
-                        matchingDigits[value[i]]++;
+                        return true;
                     }
-                    else
-                    {
-                        matchingDigits[value[i]] = 1;
-                    }
+
+                    count = 1;
                 }
             }
 
-            return matchingDigits.Values.Where(x=>x==1).Count() > 0;
+            return count == 2;
         }
     }
 }
