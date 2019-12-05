@@ -11,15 +11,15 @@ namespace AoCTools
         public static readonly LongPoint2D XAxis = new LongPoint2D(1, 0);
         public static readonly LongPoint2D YAxis = new LongPoint2D(0, 1);
 
-        public long Length => Math.Abs(x) + Math.Abs(y);
+        public readonly long Length => Math.Abs(x) + Math.Abs(y);
 
-        public Point2D ToPoint2D => new Point2D((int)x, (int)y);
-        public Point3D ToPoint3D => new Point3D((int)x, (int)y, 0);
-        public LongPoint3D ToLongPoint3D => new LongPoint3D(x, y, 0);
-        public Vector2D ToVector2D => new Vector2D(x, y);
-        public Vector3D ToVector3D => new Vector3D(x, y, 0);
+        public readonly Point2D ToPoint2D => new Point2D((int)x, (int)y);
+        public readonly Point3D ToPoint3D => new Point3D((int)x, (int)y, 0);
+        public readonly LongPoint3D ToLongPoint3D => new LongPoint3D(x, y, 0);
+        public readonly Vector2D ToVector2D => new Vector2D(x, y);
+        public readonly Vector3D ToVector3D => new Vector3D(x, y, 0);
 
-        public LongPoint2D AxisStep
+        public readonly LongPoint2D AxisStep
         {
             get
             {
@@ -44,9 +44,9 @@ namespace AoCTools
         }
 
         public static implicit operator LongPoint2D((long x, long y) point) => new LongPoint2D(point.x, point.y);
-        public static implicit operator (long x, long y)(LongPoint2D point) => (point.x, point.y);
+        public static implicit operator (long x, long y)(in LongPoint2D point) => (point.x, point.y);
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             if (!(obj is LongPoint2D other))
             {
@@ -56,8 +56,8 @@ namespace AoCTools
             return x == other.x && y == other.y;
         }
 
-        public override int GetHashCode() => HashCode.Combine(x, y);
-        public override string ToString() => $"({x}, {y})";
+        public readonly override int GetHashCode() => HashCode.Combine(x, y);
+        public readonly override string ToString() => $"({x}, {y})";
 
         public static bool operator ==(in LongPoint2D lhs, in LongPoint2D rhs) =>
             lhs.x == rhs.x && lhs.y == rhs.y;
@@ -79,7 +79,7 @@ namespace AoCTools
         public static LongPoint2D operator -(in LongPoint2D value) =>
             new LongPoint2D(-value.x, -value.y);
 
-        public void Deconstruct(out long x, out long y)
+        public readonly void Deconstruct(out long x, out long y)
         {
             x = this.x;
             y = this.y;

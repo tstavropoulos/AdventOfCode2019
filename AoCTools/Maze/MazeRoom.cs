@@ -85,18 +85,15 @@ namespace AoCTools.Maze
             }
         }
 
-        public MazeRoom TravelAndCreate(Direction dir)
-        {
-            switch (dir)
+        public MazeRoom TravelAndCreate(Direction dir) =>
+            dir switch
             {
-                case Direction.North: return N ?? (rooms.TryGetValue((pos.x, pos.y + 1), out N) ? N : (N = new MazeRoom(pos.x, pos.y + 1, dir)));
-                case Direction.South: return S ?? (rooms.TryGetValue((pos.x, pos.y - 1), out S) ? S : (S = new MazeRoom(pos.x, pos.y - 1, dir)));
-                case Direction.East: return E ?? (rooms.TryGetValue((pos.x + 1, pos.y), out E) ? E : (E = new MazeRoom(pos.x + 1, pos.y, dir)));
-                case Direction.West: return W ?? (rooms.TryGetValue((pos.x - 1, pos.y), out W) ? W : (W = new MazeRoom(pos.x - 1, pos.y, dir)));
-
-                default: throw new Exception();
-            }
-        }
+                Direction.North => N ?? (rooms.TryGetValue((pos.x, pos.y + 1), out N) ? N : (N = new MazeRoom(pos.x, pos.y + 1, dir))),
+                Direction.South => S ?? (rooms.TryGetValue((pos.x, pos.y - 1), out S) ? S : (S = new MazeRoom(pos.x, pos.y - 1, dir))),
+                Direction.East => E ?? (rooms.TryGetValue((pos.x + 1, pos.y), out E) ? E : (E = new MazeRoom(pos.x + 1, pos.y, dir))),
+                Direction.West => W ?? (rooms.TryGetValue((pos.x - 1, pos.y), out W) ? W : (W = new MazeRoom(pos.x - 1, pos.y, dir))),
+                _ => throw new Exception(),
+            };
 
         public IEnumerable<MazeRoom> GetConnectedRooms(MazeRoom source = null)
         {

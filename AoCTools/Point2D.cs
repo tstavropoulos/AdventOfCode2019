@@ -11,15 +11,15 @@ namespace AoCTools
         public static readonly Point2D XAxis = new Point2D(1, 0);
         public static readonly Point2D YAxis = new Point2D(0, 1);
 
-        public int Length => Math.Abs(x) + Math.Abs(y);
+        public readonly int Length => Math.Abs(x) + Math.Abs(y);
 
-        public Point3D ToPoint3D => new Point3D(x, y, 0);
-        public LongPoint2D ToLongPoint2D => new LongPoint2D(x, y);
-        public LongPoint3D ToLongPoint3D => new LongPoint3D(x, y, 0);
-        public Vector2D ToVector2D => new Vector2D(x, y);
-        public Vector3D ToVector3D => new Vector3D(x, y, 0);
+        public readonly Point3D ToPoint3D => new Point3D(x, y, 0);
+        public readonly LongPoint2D ToLongPoint2D => new LongPoint2D(x, y);
+        public readonly LongPoint3D ToLongPoint3D => new LongPoint3D(x, y, 0);
+        public readonly Vector2D ToVector2D => new Vector2D(x, y);
+        public readonly Vector3D ToVector3D => new Vector3D(x, y, 0);
 
-        public Point2D AxisStep
+        public readonly Point2D AxisStep
         {
             get
             {
@@ -44,9 +44,9 @@ namespace AoCTools
         }
 
         public static implicit operator Point2D((int x, int y) point) => new Point2D(point.x, point.y);
-        public static implicit operator (int x, int y)(Point2D point) => (point.x, point.y);
+        public static implicit operator (int x, int y)(in Point2D point) => (point.x, point.y);
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             if (!(obj is Point2D other))
             {
@@ -56,8 +56,8 @@ namespace AoCTools
             return x == other.x && y == other.y;
         }
 
-        public override int GetHashCode() => HashCode.Combine(x, y);
-        public override string ToString() => $"({x}, {y})";
+        public readonly override int GetHashCode() => HashCode.Combine(x, y);
+        public readonly override string ToString() => $"({x}, {y})";
 
         public static bool operator ==(in Point2D lhs, in Point2D rhs) =>
             lhs.x == rhs.x && lhs.y == rhs.y;
@@ -79,7 +79,7 @@ namespace AoCTools
         public static Point2D operator -(in Point2D value) =>
             new Point2D(-value.x, -value.y);
 
-        public void Deconstruct(out int x, out int y)
+        public readonly void Deconstruct(out int x, out int y)
         {
             x = this.x;
             y = this.y;
