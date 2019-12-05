@@ -7,7 +7,9 @@ namespace AoCTools.IntCode
     public class IntCode
     {
         public int instr;
-        public int[] regs;
+        public List<int> regs;
+        private readonly Action<int> output;
+        private readonly Func<int> input;
 
         public enum State
         {
@@ -19,6 +21,12 @@ namespace AoCTools.IntCode
         {
             Add = 1,
             Multiply = 2,
+            Set = 3,
+            Output = 4,
+            JIT = 5,
+            JIF = 6,
+            LT = 7,
+            EQ = 8,
             Terminate = 99
         }
 
@@ -28,41 +36,94 @@ namespace AoCTools.IntCode
             set => regs[i] = value;
         }
 
-        public IntCode(int[] regs, bool clone = false)
+        public IntCode(IEnumerable<int> regs, Action<int> output = null, Func<int> input = null)
         {
             instr = 0;
 
-            if (clone)
-            {
-                this.regs = (int[])regs.Clone();
-            }
-            else
-            {
-                this.regs = regs;
-            }
+            this.regs = new List<int>(regs);
+
+            this.input = input;
+            this.output = output;
         }
 
-        public IntCode Clone() => new IntCode(regs, true);
-        public IntCode CloneState() => new IntCode(regs, true) { instr = instr };
+        public IntCode Clone() => new IntCode(regs);
+        public IntCode CloneState() => new IntCode(regs) { instr = instr };
+
+        private int GetValue(int input, bool mode)
+        {
+            if (mode)
+            {
+                return input;
+            }
+
+            return regs[input];
+        }
 
         public State Execute()
         {
-            switch ((Instr)regs[instr])
+            Instr instruction = (Instr)(regs[instr] % 100);
+            bool oneMode = ((regs[instr] / 100) % 10) == 1;
+            bool twoMode = ((regs[instr] / 1000) % 10) == 1;
+            bool threeMode = ((regs[instr] / 10000) % 10) == 1;
+
+            switch (instruction)
             {
                 case Instr.Add:
-                    regs[regs[instr + 3]] = regs[regs[instr + 1]] + regs[regs[instr + 2]];
+                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) + GetValue(regs[instr + 2], twoMode);
                     instr += 4;
                     return State.Continue;
 
                 case Instr.Multiply:
-                    regs[regs[instr + 3]] = regs[regs[instr + 1]] * regs[regs[instr + 2]];
+                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) * GetValue(regs[instr + 2], twoMode);
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.Set:
+                    regs[regs[instr + 1]] = input.Invoke();
+                    instr += 2;
+                    return State.Continue;
+
+                case Instr.Output:
+                    output.Invoke(GetValue(regs[instr + 1], oneMode));
+                    instr += 2;
+                    return State.Continue;
+
+                case Instr.JIT:
+                    if (GetValue(regs[instr + 1], oneMode) != 0)
+                    {
+                        instr = GetValue(regs[instr + 2], twoMode);
+                    }
+                    else
+                    {
+                        instr += 3;
+                    }
+                    return State.Continue;
+
+                case Instr.JIF:
+                    if (GetValue(regs[instr + 1], oneMode) == 0)
+                    {
+                        instr = GetValue(regs[instr + 2], twoMode);
+                    }
+                    else
+                    {
+                        instr += 3;
+                    }
+                    return State.Continue;
+
+                case Instr.LT:
+                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) < GetValue(regs[instr + 2], twoMode) ? 1 : 0;
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.EQ:
+                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) == GetValue(regs[instr + 2], twoMode) ? 1 : 0;
                     instr += 4;
                     return State.Continue;
 
                 case Instr.Terminate:
                     return State.Terminate;
 
-                default: throw new Exception($"Unsupported instruction: {regs[instr]}");
+                default: throw new Exception($"Unsupported instruction: {instruction}");
             }
         }
 

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day03 - Crossed Wires", "Da
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day04 - Secure Container", "Day04\Day04 - Secure Container.csproj", "{85FF6BA5-4173-4BDD-9570-FD440B33E521}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day05", "Day05\Day05.csproj", "{FABBA172-12DB-49C5-A829-52975658E468}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day05 - Sunny with a Chance of Asteroids", "Day05\Day05 - Sunny with a Chance of Asteroids.csproj", "{FABBA172-12DB-49C5-A829-52975658E468}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day06", "Day06\Day06.csproj", "{FD372F29-AF62-4E28-86C8-40AA535AC816}"
 EndProject
