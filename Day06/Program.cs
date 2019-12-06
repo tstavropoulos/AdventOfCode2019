@@ -25,7 +25,6 @@ namespace Day06
                 Planet child = GetPlanet(line.Substring(4, 3));
 
                 parent.AddChild(child);
-                child.SetParent(parent);
             }
 
             int output1 = planets.Values.Select(x => x.Tier).Sum();
@@ -38,10 +37,27 @@ namespace Day06
 
 
             Planet start = planets["YOU"].parent;
-            start.Distance = 0;
-
             Planet end = planets["SAN"].parent;
 
+            int bfsDistance = DistanceBFS(start, end);
+            int treeSearchDistance = SimpleTreeDistance(start, end);
+
+            if (bfsDistance != treeSearchDistance)
+            {
+                throw new Exception("Oh no!  The distances disagreed.  Some sort of problem exists.");
+            }
+
+            Console.WriteLine($"The distance from you to santa is: {bfsDistance}");
+
+            Console.WriteLine();
+            Console.ReadKey();
+        }
+
+        // Breadth-first search
+        public static int DistanceBFS(Planet start, Planet end)
+        {
+            Dictionary<Planet, int> distanceMap = new Dictionary<Planet, int>()
+            { { start, 0 } };
 
             Queue<Planet> pendingEvals = new Queue<Planet>();
 
@@ -53,25 +69,54 @@ namespace Day06
 
                 if (current == end)
                 {
-                    break;
+                    return distanceMap[current];
                 }
 
-                int newDistance = current.Distance + 1;
+                int newDistance = distanceMap[current] + 1;
 
                 foreach (Planet next in current.Connections())
                 {
-                    if (next.Distance > newDistance)
+                    if (!distanceMap.ContainsKey(next) || distanceMap[next] > newDistance)
                     {
-                        next.Distance = newDistance;
+                        distanceMap[next] = newDistance;
                         pendingEvals.Enqueue(next);
                     }
                 }
             }
 
-            Console.WriteLine($"The distance from you to santa is: {end.Distance}");
+            throw new Exception("Path not found");
+        }
 
-            Console.WriteLine();
-            Console.ReadKey();
+        //Faster search for simple tree
+        public static int SimpleTreeDistance(Planet start, Planet end)
+        {
+            Dictionary<Planet, int> startParentDistances = new Dictionary<Planet, int>();
+
+            int distance = 0;
+            Planet current = start;
+
+            while (current != null)
+            {
+                startParentDistances.Add(current, distance);
+                current = current.parent;
+                distance++;
+            }
+
+            distance = 0;
+            current = end;
+
+            while (current != null)
+            {
+                if (startParentDistances.ContainsKey(current))
+                {
+                    return distance + startParentDistances[current];
+                }
+
+                distance++;
+                current = current.parent;
+            }
+
+            throw new Exception("Path not found");
         }
 
         public static Planet GetPlanet(string name)

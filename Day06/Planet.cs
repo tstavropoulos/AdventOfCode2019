@@ -10,8 +10,6 @@ namespace Day06
         public Planet parent = null;
         public List<Planet> children = new List<Planet>();
 
-        public int Distance { get; set; } = int.MaxValue;
-
         public int Tier
         {
             get
@@ -30,31 +28,28 @@ namespace Day06
             Name = name;
         }
 
-        public void SetParent(Planet parent)
-        {
-            if (this.parent != null)
-            {
-                throw new Exception();
-            }
-
-            this.parent = parent;
-        }
-
         public void AddChild(Planet child)
         {
             children.Add(child);
+
+            if (child.parent != null)
+            {
+                throw new Exception("Already coupled");
+            }
+
+            child.parent = this;
         }
 
         public IEnumerable<Planet> Connections()
         {
-            if (parent != null)
-            {
-                yield return parent;
-            }
-
             foreach (Planet child in children)
             {
                 yield return child;
+            }
+
+            if (parent != null)
+            {
+                yield return parent;
             }
         }
     }
