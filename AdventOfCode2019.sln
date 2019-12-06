@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day04 - Secure Container", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day05 - Sunny with a Chance of Asteroids", "Day05\Day05 - Sunny with a Chance of Asteroids.csproj", "{FABBA172-12DB-49C5-A829-52975658E468}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day06", "Day06\Day06.csproj", "{FD372F29-AF62-4E28-86C8-40AA535AC816}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day06 - Universal Orbit Map", "Day06\Day06 - Universal Orbit Map.csproj", "{FD372F29-AF62-4E28-86C8-40AA535AC816}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day07", "Day07\Day07.csproj", "{4CBA8A70-F3D0-4365-9B40-9CAEFD1A6A96}"
 EndProject
