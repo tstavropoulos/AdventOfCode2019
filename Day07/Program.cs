@@ -43,7 +43,7 @@ namespace Day07
                         name: $"Machine {i}",
                         regs: values,
                         fixedInputs: input,
-                        output: x => amplifiers[nextMachine].inputChannel.Writer.WriteAsync(x));
+                        output: x => amplifiers[nextMachine].WriteValue(x));
                 }
 
                 Task.WaitAll(amplifiers.Select(x => x.Run()).ToArray());
@@ -81,7 +81,7 @@ namespace Day07
                         name: $"Machine {i}",
                         regs: values,
                         fixedInputs: input,
-                        output: x => amplifiers[nextMachine].inputChannel.Writer.WriteAsync(x));
+                        output: x => amplifiers[nextMachine].WriteValue(x));
 
                 }
 

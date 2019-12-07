@@ -9,19 +9,20 @@ namespace AoCTools.IntCode
 {
     public class IntCode
     {
-        public int instr;
-        public readonly int[] regs;
-
-        public int fixedInputIndex = 0;
-        public readonly int[] fixedInputs;
-        private readonly Action<int> output;
-
         public int lastOutput = 0;
-        public bool done = false;
-
         public string Name { get; }
 
-        public Channel<int> inputChannel = Channel.CreateUnbounded<int>();
+        private int instr;
+
+        private bool done = false;
+
+        private readonly int[] regs;
+
+        private int fixedInputIndex = 0;
+        private readonly int[] fixedInputs;
+
+        private readonly Action<int> output;
+        private readonly Channel<int> inputChannel = Channel.CreateUnbounded<int>();
 
         public enum State
         {
@@ -71,6 +72,11 @@ namespace AoCTools.IntCode
             }
 
             return regs[input];
+        }
+
+        public void WriteValue(int value)
+        {
+            inputChannel.Writer.WriteAsync(value);
         }
 
         public Task Run()
