@@ -46,11 +46,10 @@ namespace Day07
                         output: x => amplifiers[nextMachine].WriteValue(x));
                 }
 
-                Task.WaitAll(amplifiers.Select(x => x.Run()).ToArray());
+                amplifiers.Select(x => x.Run()).ToArray()[4].Wait();
 
                 bestOutput = Math.Max(bestOutput, amplifiers[4].lastOutput);
             }
-
 
             Console.WriteLine($"The answer is: {bestOutput}");
 
@@ -85,7 +84,7 @@ namespace Day07
 
                 }
 
-                Task.WaitAll(amplifiers.Select(x => x.Run()).ToArray());
+                amplifiers.Select(x => x.Run()).ToArray()[4].Wait();
 
                 bestOutput2 = Math.Max(bestOutput2, amplifiers[4].lastOutput);
             }
