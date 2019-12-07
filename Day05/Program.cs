@@ -21,31 +21,28 @@ namespace Day05
 
             int[] values = line.Split(',').Select(int.Parse).ToArray();
 
-            int output1 = 0;
+            IntCode machine = new IntCode(
+                name: $"Star 1 Machine",
+                regs: values,
+                fixedInputs: new[] { 1 });
 
-            IntCode machine = new IntCode(values,
-                output: x => output1 = x,
-                input: () => 1);
+            machine.Run().Wait();
 
-            while (machine.Execute() != IntCode.State.Terminate) { }
+            Console.WriteLine($"The answer is: {machine.lastOutput}");
 
-            Console.WriteLine($"The answer is: {output1}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            IntCode machine2 = new IntCode(
+                name: $"Star 2 Machine",
+                regs: values,
+                fixedInputs: new[] { 5 });
 
-            int output2 = 0;
+            machine2.Run().Wait();
 
-            IntCode machine2 = new IntCode(values,
-                output: x => output2 = x,
-                input: () => 5);
-
-            while (machine2.Execute() != IntCode.State.Terminate) { }
-
-
-            Console.WriteLine($"The answer is: {output2}");
+            Console.WriteLine($"The answer is: {machine2.lastOutput}");
 
             Console.WriteLine();
             Console.ReadKey();

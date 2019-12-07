@@ -1,17 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading.Channels;
 
 namespace AoCTools.IntCode
 {
     public class IntCode
     {
         public int instr;
-        public List<int> regs;
+        public readonly int[] regs;
+
+        public int fixedInputIndex = 0;
+        public readonly int[] fixedInputs;
         private readonly Action<int> output;
-        private readonly Func<int> input;
+
         public int lastOutput = 0;
         public bool done = false;
+
+        public string Name { get; }
+
+        public Channel<int> inputChannel = Channel.CreateUnbounded<int>();
 
         public enum State
         {
@@ -24,7 +34,7 @@ namespace AoCTools.IntCode
         {
             Add = 1,
             Multiply = 2,
-            Set = 3,
+            Input = 3,
             Output = 4,
             JIT = 5,
             JIF = 6,
@@ -39,18 +49,19 @@ namespace AoCTools.IntCode
             set => regs[i] = value;
         }
 
-        public IntCode(IEnumerable<int> regs, Action<int> output = null, Func<int> input = null)
+        public IntCode(
+            string name,
+            IEnumerable<int> regs,
+            IEnumerable<int> fixedInputs = null,
+            Action<int> output = null)
         {
             instr = 0;
+            Name = name;
 
-            this.regs = new List<int>(regs);
-
-            this.input = input;
+            this.regs = regs.ToArray();
+            this.fixedInputs = fixedInputs?.ToArray() ?? new int[0];
             this.output = output;
         }
-
-        public IntCode Clone() => new IntCode(regs);
-        public IntCode CloneState() => new IntCode(regs) { instr = instr };
 
         private int GetValue(int input, bool mode)
         {
@@ -62,20 +73,30 @@ namespace AoCTools.IntCode
             return regs[input];
         }
 
-        public int RunToOutput()
+        public Task Run()
         {
-            while (Execute() != State.Output) { }
-
-            return lastOutput;
+            Task task = new Task(RunToEnd);
+            task.Start();
+            return task;
         }
 
-        public State Execute()
+        private void RunToEnd()
+        {
+            State state = State.Continue;
+            while (state != State.Terminate)
+            {
+                Task<State> executeTask = Execute();
+                executeTask.Wait();
+                state = executeTask.Result;
+            }
+        }
+
+        public async Task<State> Execute()
         {
             if (done)
             {
                 return State.Terminate;
             }
-
 
             Instr instruction = (Instr)(regs[instr] % 100);
             bool oneMode = ((regs[instr] / 100) % 10) == 1;
@@ -94,15 +115,24 @@ namespace AoCTools.IntCode
                     instr += 4;
                     return State.Continue;
 
-                case Instr.Set:
-                    regs[regs[instr + 1]] = input.Invoke();
+                case Instr.Input:
+                    int inputValue;
+                    if (fixedInputIndex < fixedInputs.Length)
+                    {
+                        inputValue = fixedInputs[fixedInputIndex++];
+                    }
+                    else
+                    {
+                        inputValue = await inputChannel.Reader.ReadAsync();
+                    }
+                    regs[regs[instr + 1]] = inputValue;
                     instr += 2;
                     return State.Continue;
 
                 case Instr.Output:
                     lastOutput = GetValue(regs[instr + 1], oneMode);
-                    output?.Invoke(lastOutput);
                     instr += 2;
+                    output?.Invoke(lastOutput);
                     return State.Output;
 
                 case Instr.JIT:

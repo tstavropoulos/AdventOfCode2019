@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using AoCTools.IntCode;
 using State = AoCTools.IntCode.IntCode.State;
 
@@ -18,14 +19,15 @@ namespace Day02
             Console.WriteLine();
 
             int[] initialRegs = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
-            IntCode initialIntCode = new IntCode(initialRegs);
 
-            IntCode intCode = initialIntCode.Clone();
+            IntCode intCode = new IntCode(
+                name: "Star 1 Machine",
+                regs: initialRegs);
 
             intCode[1] = 12;
             intCode[2] = 2;
 
-            while (intCode.Execute() != State.Terminate) { }
+            intCode.Run().Wait();
 
             Console.WriteLine($"The answer is: {intCode[0]}");
 
@@ -33,25 +35,27 @@ namespace Day02
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-            int matchingInput = FindMatch(initialIntCode);
+            int matchingInput = FindMatch(initialRegs);
             Console.WriteLine($"The answer is: {matchingInput}");
 
             Console.WriteLine();
             Console.ReadKey();
         }
 
-        private static int FindMatch(IntCode initialIntCode)
+        private static int FindMatch(int[] initialRegs)
         {
             for (int noun = 0; noun < 100; noun++)
             {
                 for (int verb = 0; verb < 100; verb++)
                 {
-                    IntCode intCode = initialIntCode.Clone();
+                    IntCode intCode = new IntCode(
+                        name: $"Star 2 Machine ({noun},{verb})",
+                        regs: initialRegs);
 
                     intCode[1] = noun;
                     intCode[2] = verb;
 
-                    while (intCode.Execute() != State.Terminate) { }
+                    intCode.Run().Wait();
 
                     if (intCode[0] == 19690720)
                     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using System.Threading.Tasks;
 using AoCTools.IntCode;
 
 namespace Day07
@@ -10,11 +10,6 @@ namespace Day07
     class Program
     {
         private const string inputFile = @"../../../../input07.txt";
-        static bool inputToggle = false;
-        static int lastOutput = 0;
-        static int phaseValue = 0;
-        static IntCode[] amplifiers = new IntCode[5];
-        static int[] inputRequestCount = new int[5];
 
         static void Main(string[] args)
         {
@@ -25,97 +20,80 @@ namespace Day07
             string line = File.ReadAllText(inputFile);
 
             int[] values = line.Split(',').Select(int.Parse).ToArray();
-
             int bestOutput = int.MinValue;
+            IntCode[] amplifiers = new IntCode[5];
 
-            foreach(int[] ordering in GetOrderings(new int[5], 0, new bool[5], 0))
+            foreach (int[] ordering in GetOrderings(new int[5], 0, new bool[5], 0))
             {
-                lastOutput = 0;
                 for (int i = 0; i < 5; i++)
                 {
-                    inputToggle = false;
-                    phaseValue = ordering[i];
-                    IntCode amplifier = new IntCode(
-                        values,
-                        output: x => lastOutput = x,
-                        input: GetInput);
+                    int[] input;
 
-                    while (amplifier.Execute() != IntCode.State.Terminate) { }
+                    if (i == 0)
+                    {
+                        input = new[] { ordering[i], 0 };
+                    }
+                    else
+                    {
+                        input = new[] { ordering[i] };
+                    }
+
+                    int nextMachine = (i + 1) % 5;
+                    amplifiers[i] = new IntCode(
+                        name: $"Machine {i}",
+                        regs: values,
+                        fixedInputs: input,
+                        output: x => amplifiers[nextMachine].inputChannel.Writer.WriteAsync(x));
                 }
 
-                bestOutput = Math.Max(bestOutput, lastOutput);
+                Task.WaitAll(amplifiers.Select(x => x.Run()).ToArray());
+
+                bestOutput = Math.Max(bestOutput, amplifiers[4].lastOutput);
             }
 
+
             Console.WriteLine($"The answer is: {bestOutput}");
+
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-
             int bestOutput2 = int.MinValue;
 
             foreach (int[] ordering in GetOrderings(new int[5], 0, new bool[5], 5))
             {
-                Array.Clear(inputRequestCount, 0, 5);
                 for (int i = 0; i < 5; i++)
                 {
-                    int machineIndex = i;
-                    int priorMachine = (i + 5 - 1) % 5;
-                    inputToggle = false;
-                    amplifiers[i] = new IntCode(
-                        values,
-                        input: () =>
-                        {
-                            int request = inputRequestCount[machineIndex]++;
+                    int nextMachine = (i + 1) % 5;
+                    int[] input;
 
-                            switch (request)
-                            {
-                                case 0:
-                                    return ordering[machineIndex];
-
-                                case 1:
-                                    if (machineIndex == 0)
-                                    {
-                                        return 0;
-                                    }
-                                    goto default;
-
-                                default:
-                                    return amplifiers[priorMachine].lastOutput;
-                            }
-                        });
-
-                }
-
-                while (!amplifiers[4].done)
-                {
-                    for (int i = 0; i < 5; i++)
+                    if (i == 0)
                     {
-                        while (amplifiers[i].Execute() == IntCode.State.Continue) { }
+                        input = new[] { ordering[i], 0 };
                     }
+                    else
+                    {
+                        input = new[] { ordering[i] };
+                    }
+
+                    amplifiers[i] = new IntCode(
+                        name: $"Machine {i}",
+                        regs: values,
+                        fixedInputs: input,
+                        output: x => amplifiers[nextMachine].inputChannel.Writer.WriteAsync(x));
+
                 }
+
+                Task.WaitAll(amplifiers.Select(x => x.Run()).ToArray());
 
                 bestOutput2 = Math.Max(bestOutput2, amplifiers[4].lastOutput);
             }
 
-
             Console.WriteLine($"The answer is: {bestOutput2}");
-
 
             Console.WriteLine();
             Console.ReadKey();
-        }
-
-        static int GetInput()
-        {
-            if (!inputToggle)
-            {
-                inputToggle = true;
-                return phaseValue;
-            }
-
-            return lastOutput;
         }
 
         static IEnumerable<int[]> GetOrderings(int[] order, int index, bool[] used, int offset)
