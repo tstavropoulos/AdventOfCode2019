@@ -10,10 +10,13 @@ namespace AoCTools.IntCode
         public List<int> regs;
         private readonly Action<int> output;
         private readonly Func<int> input;
+        public int lastOutput = 0;
+        public bool done = false;
 
         public enum State
         {
             Continue = 0,
+            Output,
             Terminate
         }
 
@@ -59,8 +62,21 @@ namespace AoCTools.IntCode
             return regs[input];
         }
 
+        public int RunToOutput()
+        {
+            while (Execute() != State.Output) { }
+
+            return lastOutput;
+        }
+
         public State Execute()
         {
+            if (done)
+            {
+                return State.Terminate;
+            }
+
+
             Instr instruction = (Instr)(regs[instr] % 100);
             bool oneMode = ((regs[instr] / 100) % 10) == 1;
             bool twoMode = ((regs[instr] / 1000) % 10) == 1;
@@ -84,9 +100,10 @@ namespace AoCTools.IntCode
                     return State.Continue;
 
                 case Instr.Output:
-                    output.Invoke(GetValue(regs[instr + 1], oneMode));
+                    lastOutput = GetValue(regs[instr + 1], oneMode);
+                    output?.Invoke(lastOutput);
                     instr += 2;
-                    return State.Continue;
+                    return State.Output;
 
                 case Instr.JIT:
                     if (GetValue(regs[instr + 1], oneMode) != 0)
@@ -121,6 +138,7 @@ namespace AoCTools.IntCode
                     return State.Continue;
 
                 case Instr.Terminate:
+                    done = true;
                     return State.Terminate;
 
                 default: throw new Exception($"Unsupported instruction: {instruction}");

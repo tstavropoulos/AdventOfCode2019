@@ -25,7 +25,7 @@ namespace Day02
             intCode[1] = 12;
             intCode[2] = 2;
 
-            while (intCode.Execute() == State.Continue) ;
+            while (intCode.Execute() != State.Terminate) { }
 
             Console.WriteLine($"The answer is: {intCode[0]}");
 
@@ -51,7 +51,7 @@ namespace Day02
                     intCode[1] = noun;
                     intCode[2] = verb;
 
-                    while (intCode.Execute() == State.Continue) ;
+                    while (intCode.Execute() != State.Terminate) { }
 
                     if (intCode[0] == 19690720)
                     {

@@ -27,7 +27,7 @@ namespace Day05
                 output: x => output1 = x,
                 input: () => 1);
 
-            while (machine.Execute() == IntCode.State.Continue) { }
+            while (machine.Execute() != IntCode.State.Terminate) { }
 
             Console.WriteLine($"The answer is: {output1}");
 
@@ -42,7 +42,7 @@ namespace Day05
                 output: x => output2 = x,
                 input: () => 5);
 
-            while (machine2.Execute() == IntCode.State.Continue) { }
+            while (machine2.Execute() != IntCode.State.Terminate) { }
 
 
             Console.WriteLine($"The answer is: {output2}");
