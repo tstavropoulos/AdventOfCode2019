@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using AoCTools.IntCode;
-using State = AoCTools.IntCode.IntCode.State;
 
 namespace Day02
 {

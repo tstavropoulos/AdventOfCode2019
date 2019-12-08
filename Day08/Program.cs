@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,31 +10,85 @@ namespace Day08
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 8");
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.WriteLine("Day 8 - Space Image Format");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            string[] lines = File.ReadAllLines(inputFile);
+            string line = File.ReadAllText(inputFile);
 
+            //25 x 6
+            int layerSize = 25 * 6;
+            int layerCount = line.Length / layerSize;
+            string[] lines = new string[layerCount];
 
+            for (int i = 0; i < layerCount; i++)
+            {
+                lines[i] = line.Substring(layerSize * i, layerSize);
+            }
 
-            int output1 = 0;
+            int zeros = int.MaxValue;
+            int ones = 0;
+            int twos = 0;
 
+            for (int i = 0; i < layerCount; i++)
+            {
+                int temp_zeros = 0;
 
+                temp_zeros = lines[i].Count(x => x == '0');
 
-            Console.WriteLine($"The answer is: {output1}");
+                if (temp_zeros < zeros)
+                {
+                    zeros = temp_zeros;
+                    ones = lines[i].Count(x => x == '1');
+                    twos = lines[i].Count(x => x == '2');
+                }
+            }
+
+            Console.WriteLine($"The answer is: {ones * twos}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            char[] finalImage = new char[layerSize];
 
-            int output2 = 0;
+            for (int pixel = 0; pixel < layerSize; pixel++)
+            {
+                for (int layer = 0; layer < layerCount; layer++)
+                {
+                    if (lines[layer][pixel] == '2')
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        finalImage[pixel] = lines[layer][pixel];
+                        break;
+                    }
+                }
+            }
 
+            for (int i = 0; i < layerSize; i++)
+            {
+                if (i % 25 == 0)
+                {
+                    Console.WriteLine();
+                }
 
+                if (finalImage[i] == '1')
+                {
+                    Console.BackgroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }
+                Console.Write(' ');
 
-            Console.WriteLine($"The answer is: {output2}");
+            }
 
+            Console.BackgroundColor = ConsoleColor.Black;
 
             Console.WriteLine();
             Console.ReadKey();
