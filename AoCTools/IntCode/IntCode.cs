@@ -9,20 +9,23 @@ namespace AoCTools.IntCode
 {
     public class IntCode
     {
-        public int lastOutput = 0;
+        public long lastOutput = 0;
         public string Name { get; }
 
-        private int instr;
+        private long instr;
 
         private bool done = false;
 
-        private readonly int[] regs;
+        private readonly Dictionary<long,long> regs;
 
-        private int fixedInputIndex = 0;
-        private readonly int[] fixedInputs;
+        private long fixedInputIndex = 0;
+        private readonly long[] fixedInputs;
 
-        private readonly Action<int> output;
-        private readonly Channel<int> inputChannel = Channel.CreateUnbounded<int>();
+        private readonly Action<long> output;
+        private readonly Channel<long> inputChannel = Channel.CreateUnbounded<long>();
+
+        private long relativeBase = 0;
+
 
         public enum State
         {
@@ -41,10 +44,18 @@ namespace AoCTools.IntCode
             JIF = 6,
             LT = 7,
             EQ = 8,
+            ADJ = 9,
             Terminate = 99
         }
 
-        public int this[int i]
+        public enum Mode
+        {
+            position = 0,
+            value,
+            relative
+        }
+
+        public long this[int i]
         {
             get => regs[i];
             set => regs[i] = value;
@@ -52,29 +63,73 @@ namespace AoCTools.IntCode
 
         public IntCode(
             string name,
-            IEnumerable<int> regs,
-            IEnumerable<int> fixedInputs = null,
-            Action<int> output = null)
+            IEnumerable<long> regs,
+            IEnumerable<long> fixedInputs = null,
+            Action<long> output = null)
         {
             instr = 0;
             Name = name;
 
-            this.regs = regs.ToArray();
-            this.fixedInputs = fixedInputs?.ToArray() ?? new int[0];
+            this.regs = new Dictionary<long,long>(regs.Count());
+
+            long index = 0;
+            foreach(long value in regs)
+            {
+                this.regs.Add(index++, value);
+            }
+
+            this.fixedInputs = fixedInputs?.ToArray() ?? new long[0];
             this.output = output;
         }
 
-        private int GetValue(int input, bool mode)
+        private long GetValue(long reg, Mode mode)
         {
-            if (mode)
+            switch (mode)
             {
-                return input;
-            }
+                case Mode.position:
+                    return GetIndex(GetIndex(reg));
 
-            return regs[input];
+                case Mode.value:
+                    return GetIndex(reg);
+
+                case Mode.relative:
+                    return GetIndex(GetIndex(reg) + relativeBase);
+
+                default:
+                    throw new Exception();
+            }
         }
 
-        public void WriteValue(int value)
+        private long GetIndex(long index)
+        {
+            if (regs.ContainsKey(index))
+            {
+                return regs[index];
+            }
+
+            return 0L;
+        }
+
+
+        private void SetValue(long reg, Mode setMode, long value)
+        {
+            switch (setMode)
+            {
+                case Mode.position:
+                    regs[reg] = value;
+                    break;
+
+                case Mode.relative:
+                    regs[relativeBase + reg] = value;
+                    break;
+
+                case Mode.value:
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public void WriteValue(long value)
         {
             inputChannel.Writer.WriteAsync(value);
         }
@@ -105,24 +160,24 @@ namespace AoCTools.IntCode
             }
 
             Instr instruction = (Instr)(regs[instr] % 100);
-            bool oneMode = ((regs[instr] / 100) % 10) == 1;
-            bool twoMode = ((regs[instr] / 1000) % 10) == 1;
-            bool threeMode = ((regs[instr] / 10000) % 10) == 1;
+            Mode oneMode = (Mode)((regs[instr] / 100) % 10);
+            Mode twoMode = (Mode)((regs[instr] / 1000) % 10);
+            Mode threeMode = (Mode)((regs[instr] / 10000) % 10);
 
             switch (instruction)
             {
                 case Instr.Add:
-                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) + GetValue(regs[instr + 2], twoMode);
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) + GetValue(instr + 2, twoMode));
                     instr += 4;
                     return State.Continue;
 
                 case Instr.Multiply:
-                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) * GetValue(regs[instr + 2], twoMode);
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) * GetValue(instr + 2, twoMode));
                     instr += 4;
                     return State.Continue;
 
                 case Instr.Input:
-                    int inputValue;
+                    long inputValue;
                     if (fixedInputIndex < fixedInputs.Length)
                     {
                         inputValue = fixedInputs[fixedInputIndex++];
@@ -131,20 +186,20 @@ namespace AoCTools.IntCode
                     {
                         inputValue = await inputChannel.Reader.ReadAsync();
                     }
-                    regs[regs[instr + 1]] = inputValue;
+                    SetValue(regs[instr + 1], oneMode, inputValue);
                     instr += 2;
                     return State.Continue;
 
                 case Instr.Output:
-                    lastOutput = GetValue(regs[instr + 1], oneMode);
+                    lastOutput = GetValue(instr + 1, oneMode);
                     instr += 2;
                     output?.Invoke(lastOutput);
                     return State.Output;
 
                 case Instr.JIT:
-                    if (GetValue(regs[instr + 1], oneMode) != 0)
+                    if (GetValue(instr + 1, oneMode) != 0)
                     {
-                        instr = GetValue(regs[instr + 2], twoMode);
+                        instr = GetValue(instr + 2, twoMode);
                     }
                     else
                     {
@@ -153,9 +208,9 @@ namespace AoCTools.IntCode
                     return State.Continue;
 
                 case Instr.JIF:
-                    if (GetValue(regs[instr + 1], oneMode) == 0)
+                    if (GetValue(instr + 1, oneMode) == 0)
                     {
-                        instr = GetValue(regs[instr + 2], twoMode);
+                        instr = GetValue(instr + 2, twoMode);
                     }
                     else
                     {
@@ -164,13 +219,18 @@ namespace AoCTools.IntCode
                     return State.Continue;
 
                 case Instr.LT:
-                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) < GetValue(regs[instr + 2], twoMode) ? 1 : 0;
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) < GetValue(instr + 2, twoMode) ? 1 : 0);
                     instr += 4;
                     return State.Continue;
 
                 case Instr.EQ:
-                    regs[regs[instr + 3]] = GetValue(regs[instr + 1], oneMode) == GetValue(regs[instr + 2], twoMode) ? 1 : 0;
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) == GetValue(instr + 2, twoMode) ? 1 : 0);
                     instr += 4;
+                    return State.Continue;
+
+                case Instr.ADJ:
+                    relativeBase += GetValue(instr + 1, oneMode);
+                    instr += 2;
                     return State.Continue;
 
                 case Instr.Terminate:
