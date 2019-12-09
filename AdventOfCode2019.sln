@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day07 - Amplification Circu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day08 - Space Image Format", "Day08\Day08 - Space Image Format.csproj", "{6FB4B5A8-EBC7-49BF-BE7B-F24EFCEB5C03}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day09", "Day09\Day09.csproj", "{BF06D155-A190-463E-A567-B3B288BF15AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day09 - Sensor Boost", "Day09\Day09 - Sensor Boost.csproj", "{BF06D155-A190-463E-A567-B3B288BF15AB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day10", "Day10\Day10.csproj", "{74D69D4B-644D-45EC-BE2D-6D0244A9FACD}"
 EndProject
