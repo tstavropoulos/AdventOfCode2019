@@ -19,12 +19,12 @@ namespace Day05
 
             string line = File.ReadAllText(inputFile);
 
-            int[] values = line.Split(',').Select(int.Parse).ToArray();
+            long[] values = line.Split(',').Select(long.Parse).ToArray();
 
             IntCode machine = new IntCode(
                 name: $"Star 1 Machine",
                 regs: values,
-                fixedInputs: new[] { 1 });
+                fixedInputs: new[] { 1L });
 
             machine.Run().Wait();
 
@@ -38,7 +38,7 @@ namespace Day05
             IntCode machine2 = new IntCode(
                 name: $"Star 2 Machine",
                 regs: values,
-                fixedInputs: new[] { 5 });
+                fixedInputs: new[] { 5L });
 
             machine2.Run().Wait();
 

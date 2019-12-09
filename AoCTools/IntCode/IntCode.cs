@@ -12,11 +12,11 @@ namespace AoCTools.IntCode
         public long lastOutput = 0;
         public string Name { get; }
 
-        private long instr;
+        private int instr;
 
         private bool done = false;
 
-        private readonly Dictionary<long,long> regs;
+        private readonly List<long> regs;
 
         private long fixedInputIndex = 0;
         private readonly long[] fixedInputs;
@@ -70,15 +70,9 @@ namespace AoCTools.IntCode
             instr = 0;
             Name = name;
 
-            this.regs = new Dictionary<long,long>(regs.Count());
+            this.regs = new List<long>(regs);
 
-            long index = 0;
-            foreach(long value in regs)
-            {
-                this.regs.Add(index++, value);
-            }
-
-            this.fixedInputs = fixedInputs?.ToArray() ?? new long[0];
+            this.fixedInputs = fixedInputs?.ToArray() ?? Array.Empty<long>();
             this.output = output;
         }
 
@@ -102,9 +96,9 @@ namespace AoCTools.IntCode
 
         private long GetIndex(long index)
         {
-            if (regs.ContainsKey(index))
+            if (index < regs.Count)
             {
-                return regs[index];
+                return regs[(int)index];
             }
 
             return 0L;
@@ -116,17 +110,35 @@ namespace AoCTools.IntCode
             switch (setMode)
             {
                 case Mode.position:
-                    regs[reg] = value;
+                    SetValue((int)reg, value);
                     break;
 
                 case Mode.relative:
-                    regs[relativeBase + reg] = value;
+                    SetValue((int)(relativeBase + reg), value);
                     break;
 
                 case Mode.value:
                 default:
                     throw new Exception();
             }
+        }
+
+        private void SetValue(int index, long value)
+        {
+            if (index < regs.Count)
+            {
+                regs[(int)index] = value;
+            }
+            else
+            {
+                while (regs.Count < index)
+                {
+                    regs.Add(0L);
+                }
+
+                regs.Add(value);
+            }
+
         }
 
         public void WriteValue(long value)
@@ -199,7 +211,7 @@ namespace AoCTools.IntCode
                 case Instr.JIT:
                     if (GetValue(instr + 1, oneMode) != 0)
                     {
-                        instr = GetValue(instr + 2, twoMode);
+                        instr = (int)GetValue(instr + 2, twoMode);
                     }
                     else
                     {
@@ -210,7 +222,7 @@ namespace AoCTools.IntCode
                 case Instr.JIF:
                     if (GetValue(instr + 1, oneMode) == 0)
                     {
-                        instr = GetValue(instr + 2, twoMode);
+                        instr = (int)GetValue(instr + 2, twoMode);
                     }
                     else
                     {

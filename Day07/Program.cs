@@ -19,23 +19,23 @@ namespace Day07
 
             string line = File.ReadAllText(inputFile);
 
-            int[] values = line.Split(',').Select(int.Parse).ToArray();
-            int bestOutput = int.MinValue;
+            long[] values = line.Split(',').Select(long.Parse).ToArray();
+            long bestOutput = long.MinValue;
             IntCode[] amplifiers = new IntCode[5];
 
             foreach (int[] ordering in GetOrderings(new int[5], 0, new bool[5], 0))
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    int[] input;
+                    long[] input;
 
                     if (i == 0)
                     {
-                        input = new[] { ordering[i], 0 };
+                        input = new long[] { ordering[i], 0 };
                     }
                     else
                     {
-                        input = new[] { ordering[i] };
+                        input = new long[] { ordering[i] };
                     }
 
                     int nextMachine = (i + 1) % 5;
@@ -58,22 +58,22 @@ namespace Day07
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
-            int bestOutput2 = int.MinValue;
+            long bestOutput2 = int.MinValue;
 
             foreach (int[] ordering in GetOrderings(new int[5], 0, new bool[5], 5))
             {
                 for (int i = 0; i < 5; i++)
                 {
                     int nextMachine = (i + 1) % 5;
-                    int[] input;
+                    long[] input;
 
                     if (i == 0)
                     {
-                        input = new[] { ordering[i], 0 };
+                        input = new long[] { ordering[i], 0 };
                     }
                     else
                     {
-                        input = new[] { ordering[i] };
+                        input = new long[] { ordering[i] };
                     }
 
                     amplifiers[i] = new IntCode(

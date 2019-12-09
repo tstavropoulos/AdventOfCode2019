@@ -15,7 +15,7 @@ namespace Day02
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            int[] initialRegs = File.ReadAllText(inputFile).Split(',').Select(int.Parse).ToArray();
+            long[] initialRegs = File.ReadAllText(inputFile).Split(',').Select(long.Parse).ToArray();
 
             IntCode intCode = new IntCode(
                 name: "Star 1 Machine",
@@ -39,7 +39,7 @@ namespace Day02
             Console.ReadKey();
         }
 
-        private static int FindMatch(int[] initialRegs)
+        private static int FindMatch(long[] initialRegs)
         {
             for (int noun = 0; noun < 100; noun++)
             {
