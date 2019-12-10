@@ -10,23 +10,18 @@ namespace Day10
     class Program
     {
         private const string inputFile = @"../../../../input10.txt";
-        static bool[,] grid;
-        static List<Point2D> asteroids;
+        static readonly HashSet<Point2D> asteroids = new HashSet<Point2D>();
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 10");
+            Console.WriteLine("Day 10 - Monitoring Station");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
             string[] lines = File.ReadAllLines(inputFile);
 
-
-            asteroids = new List<Point2D>();
             Dictionary<Point2D, int> hitCount = new Dictionary<Point2D, int>();
             //Get all prime factors of DX and DY
-
-            grid = new bool[lines[0].Length, lines.Length];
 
             for (int y = 0; y < lines.Length; y++)
             {
@@ -34,7 +29,6 @@ namespace Day10
                 {
                     if (lines[y][x] == '#')
                     {
-                        grid[x, y] = true;
                         asteroids.Add((x, y));
                     }
                 }
@@ -54,7 +48,6 @@ namespace Day10
                     {
                         hit++;
                     }
-
                 }
 
                 hitCount.Add(origin, hit);
@@ -70,6 +63,7 @@ namespace Day10
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             Point2D basePoint = hitCount.Where(x => x.Value == max).First().Key;
 
@@ -99,10 +93,10 @@ namespace Day10
             while (vaporizedCount < 200)
             {
                 Vector3D next = map.Values
-                    .Select(x => (x - lastVaporized, x))
+                    .Select(value => (value - lastVaporized, value))
                     .OrderBy(x => x.Item1.Length)
                     .Where(x => x.Item1.Length > 0.001)
-                    .Where(x => x.Item1.Cross(lastVaporized).z < 0.0).First().Item2;
+                    .Where(x => x.Item1.Cross(lastVaporized).z < 0.0).First().value;
 
                 lastFull = map.Where(x => x.Value == next).OrderBy(x => (basePoint - x.Key).Length).First().Key;
 
@@ -110,6 +104,10 @@ namespace Day10
                 map.Remove(lastFull);
                 vaporizedCount++;
             }
+
+            sw.Stop();
+
+            Console.WriteLine($"That took {sw.Elapsed.TotalMilliseconds} ms");
 
             Console.WriteLine($"The answer is: {lastFull.x * 100 + lastFull.y}");
 
@@ -124,33 +122,9 @@ namespace Day10
             int deltaY = slope.y;
             int deltaX = slope.x;
 
+            int gcd = GCD(Math.Abs(deltaX), Math.Abs(deltaY));
 
-            List<int> xFactors = new List<int>(Factorize(Math.Abs(deltaX)));
-            List<int> yFactors = new List<int>(Factorize(Math.Abs(deltaY)));
-
-            for (int i = 0; i < xFactors.Count; i++)
-            {
-                if (yFactors.Contains(xFactors[i]))
-                {
-                    yFactors.Remove(xFactors[i]);
-                    xFactors.RemoveAt(i);
-                    i--;
-                }
-            }
-
-            int reducedX = Math.Sign(deltaX) * xFactors.Aggregate(1, (x, y) => x * y);
-            int reducedY = Math.Sign(deltaY) * yFactors.Aggregate(1, (x, y) => x * y);
-
-            Point2D reducedSlope = new Point2D(reducedX, reducedY);
-
-            if (deltaY == 0)
-            {
-                reducedSlope = new Point2D(Math.Sign(deltaX), 0);
-            }
-            else if (deltaX == 0)
-            {
-                reducedSlope = new Point2D(0, Math.Sign(deltaY));
-            }
+            Point2D reducedSlope = new Point2D(deltaX / gcd, deltaY / gcd);
 
             Point2D point = start + reducedSlope;
 
@@ -158,107 +132,35 @@ namespace Day10
             {
                 if (asteroids.Contains(point))
                 {
-                    if (start == (5, 8))
-                    {
-                        Console.WriteLine($"Missed {end} because of {point}");
-                    }
-
                     return false;
                 }
 
                 point += reducedSlope;
             }
 
-            if (start == (5, 8))
-            {
-                Console.WriteLine($"Hit {end}");
-            }
-
             return true;
         }
 
-
-        public static IEnumerable<int> Factorize(int number)
+        //Euclid's Algorith
+        public static int GCD(int a, int b)
         {
-            if (number < 1)
+            //Short cut to handling 0 case
+            if (a == 0 || b == 0)
             {
-                yield break;
+                return a == 0 ? b : a;
             }
 
-            //Strip out factors of 2.
-            //Many numbers requested will have many (or only) factors of 2.
-            //This is an optimization
-            while (number % 2 == 0)
+            if (b > a)
             {
-                yield return 2;
-                number /= 2;
+                (a, b) = (b, a);
             }
 
-            foreach (int prime in PrimesUpTo((int)Math.Sqrt(number)))
+            while (b != 0)
             {
-                while (number % prime == 0)
-                {
-                    yield return prime;
-                    number /= prime;
-                }
-
-                if (number == 1)
-                {
-                    break;
-                }
+                (a, b) = (b, a % b);
             }
 
-            if (number > 1)
-            {
-                yield return number;
-            }
-        }
-
-        public static IEnumerable<int> PrimesUpTo(int number)
-        {
-            if (number < 2)
-            {
-                yield break;
-            }
-
-            //Include the boundary
-            number++;
-
-            BitArray primeField = new BitArray(number, true);
-            primeField.Set(0, false);
-            primeField.Set(1, false);
-            yield return 2;
-
-            //We don't bother setting the multiples of 2 because we don't bother checking them.
-
-            int i;
-            for (i = 3; i * i < number; i += 2)
-            {
-                if (primeField.Get(i))
-                {
-                    //i Is Prime
-                    yield return i;
-
-                    //Clear new odd factors
-                    //All our primes are now odd, as are our primes Squared.
-                    //This maens the numbers we need to clear start at i*i, and advance by 2*i
-                    //For example j=3:  9 is the first odd composite, 15 is the next odd composite 
-                    //  that's a factor of 3
-                    for (int j = i * i; j < number; j += 2 * i)
-                    {
-                        primeField.Set(j, false);
-                    }
-                }
-            }
-
-            //Grab remainder of identified primes
-            for (; i < number; i += 2)
-            {
-                if (primeField.Get(i))
-                {
-                    yield return i;
-                }
-            }
+            return a;
         }
     }
 }
