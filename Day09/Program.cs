@@ -28,6 +28,7 @@ namespace Day09
 
             machine.Run().Wait();
 
+
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();

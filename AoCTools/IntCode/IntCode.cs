@@ -153,6 +153,11 @@ namespace AoCTools.IntCode
             return task;
         }
 
+        public void SyncRun()
+        {
+            while (SyncExecute() != State.Terminate) { }
+        }
+
         private void RunToEnd()
         {
             State state = State.Continue;
@@ -197,6 +202,95 @@ namespace AoCTools.IntCode
                     else
                     {
                         inputValue = await inputChannel.Reader.ReadAsync();
+                    }
+                    SetValue(regs[instr + 1], oneMode, inputValue);
+                    instr += 2;
+                    return State.Continue;
+
+                case Instr.Output:
+                    lastOutput = GetValue(instr + 1, oneMode);
+                    instr += 2;
+                    output?.Invoke(lastOutput);
+                    return State.Output;
+
+                case Instr.JIT:
+                    if (GetValue(instr + 1, oneMode) != 0)
+                    {
+                        instr = (int)GetValue(instr + 2, twoMode);
+                    }
+                    else
+                    {
+                        instr += 3;
+                    }
+                    return State.Continue;
+
+                case Instr.JIF:
+                    if (GetValue(instr + 1, oneMode) == 0)
+                    {
+                        instr = (int)GetValue(instr + 2, twoMode);
+                    }
+                    else
+                    {
+                        instr += 3;
+                    }
+                    return State.Continue;
+
+                case Instr.LT:
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) < GetValue(instr + 2, twoMode) ? 1 : 0);
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.EQ:
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) == GetValue(instr + 2, twoMode) ? 1 : 0);
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.ADJ:
+                    relativeBase += GetValue(instr + 1, oneMode);
+                    instr += 2;
+                    return State.Continue;
+
+                case Instr.Terminate:
+                    done = true;
+                    return State.Terminate;
+
+                default: throw new Exception($"Unsupported instruction: {instruction}");
+            }
+        }
+
+        public State SyncExecute()
+        {
+            if (done)
+            {
+                return State.Terminate;
+            }
+
+            Instr instruction = (Instr)(regs[instr] % 100);
+            Mode oneMode = (Mode)((regs[instr] / 100) % 10);
+            Mode twoMode = (Mode)((regs[instr] / 1000) % 10);
+            Mode threeMode = (Mode)((regs[instr] / 10000) % 10);
+
+            switch (instruction)
+            {
+                case Instr.Add:
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) + GetValue(instr + 2, twoMode));
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.Multiply:
+                    SetValue(regs[instr + 3], threeMode, GetValue(instr + 1, oneMode) * GetValue(instr + 2, twoMode));
+                    instr += 4;
+                    return State.Continue;
+
+                case Instr.Input:
+                    long inputValue;
+                    if (fixedInputIndex < fixedInputs.Length)
+                    {
+                        inputValue = fixedInputs[fixedInputIndex++];
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
                     }
                     SetValue(regs[instr + 1], oneMode, inputValue);
                     instr += 2;
