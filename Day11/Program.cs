@@ -20,125 +20,102 @@ namespace Day11
             string line = File.ReadAllText(inputFile);
 
             long[] regs = line.Split(",").Select(long.Parse).ToArray();
-            {
-                HullPaintingRobot robot = new HullPaintingRobot(1);
 
-                IntCode machine = new IntCode(
-                    name: "Star 1",
-                    regs: regs,
-                    fixedInputs: new long[0],
-                    input: robot.GetLocationColor,
-                    output: robot.HandleInput);
+            HullPaintingRobot firstRobot = new HullPaintingRobot(1);
 
+            IntCode firstMachine = new IntCode(
+                name: "Star 1",
+                regs: regs,
+                fixedInputs: Array.Empty<long>(),
+                input: firstRobot.GetLocationColor,
+                output: firstRobot.HandleInput);
 
+            firstMachine.SyncRun();
 
-                machine.Run().Wait();
-
-
-                Console.WriteLine($"The answer is: {robot.paintedLocations.Count}");
-            }
+            Console.WriteLine($"The answer is: {firstRobot.paintedLocations.Count}");
 
             Console.WriteLine();
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            HullPaintingRobot secondRobot = new HullPaintingRobot(2);
+
+            IntCode secondMachine = new IntCode(
+                name: "Star 2",
+                regs: regs,
+                fixedInputs: Array.Empty<long>(),
+                input: secondRobot.GetLocationColor,
+                output: secondRobot.HandleInput);
+
+            secondMachine.SyncRun();
+
+            HashSet<Point2D> finalLocations = new HashSet<Point2D>(
+                secondRobot.paintedLocations.Where(x => x.Value == 1).Select(x => x.Key));
+
+            Point2D min = finalLocations.MinCoordinate();
+            Point2D max = finalLocations.MaxCoordinate() + (1, 1);
+
+            Console.BackgroundColor = ConsoleColor.Black;
+            for (int y = min.y; y < max.y; y++)
             {
-                HullPaintingRobot robot = new HullPaintingRobot(2);
-
-                IntCode machine = new IntCode(
-                    name: "Star 2",
-                    regs: regs,
-                    fixedInputs: new long[0],
-                    input: robot.GetLocationColor,
-                    output: robot.HandleInput);
-
-                machine.Run().Wait();
-
-                HashSet<Point2D> finalLocations = new HashSet<Point2D>(
-                    robot.paintedLocations.Where(x => x.Value == 1).Select(x => x.Key));
-
-                int xMin = finalLocations.Select(x => x.x).Min();
-                int yMin = finalLocations.Select(x => x.y).Min();
-                int xMax = finalLocations.Select(x => x.x).Max();
-                int yMax = finalLocations.Select(x => x.y).Max();
-
-                Console.BackgroundColor = ConsoleColor.Black;
-                for (int y = 0; y <= yMax; y++)
+                for (int x = min.x; x < max.x; x++)
                 {
-                    for (int x = 0; x <= xMax; x++)
+                    if (finalLocations.Contains((x, y)))
                     {
-                        if (finalLocations.Contains((x, y)))
-                        {
-                            Console.BackgroundColor = ConsoleColor.White;
-                        }
-                        else
-                        {
-                            Console.BackgroundColor = ConsoleColor.Black;
-                        }
-
-                        Console.Write(' ');
+                        Console.BackgroundColor = ConsoleColor.White;
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.Black;
                     }
 
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.WriteLine();
+                    Console.Write(' ');
                 }
 
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.WriteLine();
             }
 
             Console.WriteLine();
             Console.ReadKey();
         }
+    }
 
-        public class HullPaintingRobot
+    public class HullPaintingRobot
+    {
+        bool paintMode = true;
+
+        public Dictionary<Point2D, long> paintedLocations = new Dictionary<Point2D, long>();
+
+        public Point2D location = (0, 0);
+        public Point2D heading = (0, -1);
+
+        public HullPaintingRobot(int puzzle)
         {
-            bool paintMode = true;
-
-            public Dictionary<Point2D, long> paintedLocations = new Dictionary<Point2D, long>();
-
-            public Point2D location = (0, 0);
-            public Point2D heading = (0, -1);
-
-
-            public HullPaintingRobot(int puzzle)
+            if (puzzle == 2)
             {
-                if (puzzle == 2)
-                {
-                    paintedLocations[location] = 1L;
-                }
+                paintedLocations[location] = 1L;
             }
-
-            public void HandleInput(long value)
-            {
-                if (paintMode)
-                {
-                    //Paint Location {value}
-                    paintedLocations[location] = value;
-                }
-                else
-                {
-                    //Rotate
-                    if (value == 1)
-                    {
-                        heading = new Point2D(-heading.y, heading.x);
-
-                    }
-                    else if (value == 0)
-                    {
-                        heading = new Point2D(heading.y, -heading.x);
-                    }
-                    else
-                    {
-                        throw new Exception();
-                    }
-
-                    location += heading;
-                }
-
-                paintMode = !paintMode;
-            }
-
-
-            public long GetLocationColor() => paintedLocations.GetValueOrDefault(location, 0L);
         }
+
+        public void HandleInput(long value)
+        {
+            if (paintMode)
+            {
+                //Paint
+                paintedLocations[location] = value;
+            }
+            else
+            {
+                //Rotate
+                //Left/Right reversed because of the coordinate system
+                heading = heading.Rotate(value == 0);
+                location += heading;
+            }
+
+            paintMode = !paintMode;
+        }
+
+        public long GetLocationColor() => paintedLocations.GetValueOrDefault(location, 0L);
     }
 }

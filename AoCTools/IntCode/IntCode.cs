@@ -296,10 +296,15 @@ namespace AoCTools.IntCode
                     {
                         inputValue = fixedInputs[fixedInputIndex++];
                     }
+                    else if (input != null)
+                    {
+                        inputValue = input.Invoke();
+                    }
                     else
                     {
                         throw new NotSupportedException();
                     }
+
                     SetValue(regs[instr + 1], oneMode, inputValue);
                     instr += 2;
                     return State.Continue;
