@@ -35,7 +35,7 @@ namespace Day11
                 machine.Run().Wait();
 
 
-                Console.WriteLine($"The answer is: {robot.allPaintedLocations.Count}");
+                Console.WriteLine($"The answer is: {robot.paintedLocations.Count}");
             }
 
             Console.WriteLine();
@@ -54,33 +54,36 @@ namespace Day11
 
                 machine.Run().Wait();
 
-                HashSet<Point2D> finalLocations = robot.currentPaintedLocations;
+                HashSet<Point2D> finalLocations = new HashSet<Point2D>(
+                    robot.paintedLocations.Where(x => x.Value == 1).Select(x => x.Key));
 
                 int xMin = finalLocations.Select(x => x.x).Min();
                 int yMin = finalLocations.Select(x => x.y).Min();
                 int xMax = finalLocations.Select(x => x.x).Max();
                 int yMax = finalLocations.Select(x => x.y).Max();
 
+                Console.BackgroundColor = ConsoleColor.Black;
                 for (int y = 0; y <= yMax; y++)
                 {
                     for (int x = 0; x <= xMax; x++)
                     {
                         if (finalLocations.Contains((x, y)))
                         {
-                            Console.Write('X');
+                            Console.BackgroundColor = ConsoleColor.White;
                         }
                         else
                         {
-                            Console.Write(' ');
+                            Console.BackgroundColor = ConsoleColor.Black;
                         }
+
+                        Console.Write(' ');
                     }
 
+                    Console.BackgroundColor = ConsoleColor.Black;
                     Console.WriteLine();
                 }
 
             }
-
-
 
             Console.WriteLine();
             Console.ReadKey();
@@ -90,8 +93,7 @@ namespace Day11
         {
             bool paintMode = true;
 
-            public HashSet<Point2D> allPaintedLocations = new HashSet<Point2D>();
-            public HashSet<Point2D> currentPaintedLocations = new HashSet<Point2D>();
+            public Dictionary<Point2D, long> paintedLocations = new Dictionary<Point2D, long>();
 
             public Point2D location = (0, 0);
             public Point2D heading = (0, -1);
@@ -101,28 +103,16 @@ namespace Day11
             {
                 if (puzzle == 2)
                 {
-                    allPaintedLocations.Add(location);
-                    currentPaintedLocations.Add(location);
+                    paintedLocations[location] = 1L;
                 }
             }
-
-
 
             public void HandleInput(long value)
             {
                 if (paintMode)
                 {
                     //Paint Location {value}
-                    allPaintedLocations.Add(location);
-                    if (value == 0)
-                    {
-                        currentPaintedLocations.Remove(location);
-                    }
-                    else
-                    {
-                        currentPaintedLocations.Add(location);
-                    }
-
+                    paintedLocations[location] = value;
                 }
                 else
                 {
@@ -148,7 +138,7 @@ namespace Day11
             }
 
 
-            public long GetLocationColor() => currentPaintedLocations.Contains(location) ? 1L : 0L;
+            public long GetLocationColor() => paintedLocations.GetValueOrDefault(location, 0L);
         }
     }
 }
