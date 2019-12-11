@@ -21,6 +21,7 @@ namespace AoCTools.IntCode
         private long fixedInputIndex = 0;
         private readonly long[] fixedInputs;
 
+        private readonly Func<long> input;
         private readonly Action<long> output;
         private readonly Channel<long> inputChannel = Channel.CreateUnbounded<long>();
 
@@ -65,6 +66,7 @@ namespace AoCTools.IntCode
             string name,
             IEnumerable<long> regs,
             IEnumerable<long> fixedInputs = null,
+            Func<long> input = null,
             Action<long> output = null)
         {
             instr = 0;
@@ -73,6 +75,7 @@ namespace AoCTools.IntCode
             this.regs = new List<long>(regs);
 
             this.fixedInputs = fixedInputs?.ToArray() ?? Array.Empty<long>();
+            this.input = input;
             this.output = output;
         }
 
@@ -199,10 +202,15 @@ namespace AoCTools.IntCode
                     {
                         inputValue = fixedInputs[fixedInputIndex++];
                     }
+                    else if (input != null)
+                    {
+                        inputValue = input.Invoke();
+                    }
                     else
                     {
                         inputValue = await inputChannel.Reader.ReadAsync();
                     }
+
                     SetValue(regs[instr + 1], oneMode, inputValue);
                     instr += 2;
                     return State.Continue;

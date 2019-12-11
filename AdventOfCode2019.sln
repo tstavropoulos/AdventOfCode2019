@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day09 - Sensor Boost", "Day
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day10 - Monitoring Station", "Day10\Day10 - Monitoring Station.csproj", "{74D69D4B-644D-45EC-BE2D-6D0244A9FACD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day11", "Day11\Day11.csproj", "{CFFD03E3-6C6E-4F96-81A0-535A78AB20C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day11 - Space Police", "Day11\Day11 - Space Police.csproj", "{CFFD03E3-6C6E-4F96-81A0-535A78AB20C7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day12", "Day12\Day12.csproj", "{69C38823-ADC2-40FB-9C0A-DA29C52BACD9}"
 EndProject
