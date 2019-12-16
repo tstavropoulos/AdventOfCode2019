@@ -18,10 +18,11 @@ namespace Day13
         static int inputStage = 0;
         static int cachedX = 0;
         static Point2D cachedPoint = Point2D.Zero;
+        static int score = 0;
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 13");
+            Console.WriteLine("Day 13 - Care Package");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
@@ -30,7 +31,7 @@ namespace Day13
             IntCode machine = new IntCode(
                 name: "Star 1",
                 regs: regs,
-                fixedInputs: new long[0],
+                fixedInputs: Array.Empty<long>(),
                 input: null,
                 output: RenderOutput1);
 
@@ -43,43 +44,18 @@ namespace Day13
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            TryTreeMethod(regs);
+
             //Reset
             tileMap.Clear();
             inputStage = 0;
 
-            //// Ineffective Tree solution left for Posterity's sake
-
-            //MoveTree moveTree = new MoveTree()
-            //while (true)
-            //{
-            //    tileMap.Clear();
-            //    inputStage = 0;
-
-            //    IntCode machine2 = new IntCode(
-            //        name: "Star 2",
-            //        regs: regs,
-            //        fixedInputs: new long[0],
-            //        input: moveTree.NextMove,
-            //        output: RenderOutput1);
-
-            //    machine2[0] = 2;
-
-            //    machine2.SyncRun();
-
-            //    if (tileMap.Values.Where(x => x == 2).Count() == 0)
-            //    {
-            //        break;
-            //    }
-            //    else
-            //    {
-            //        moveTree.MarkFailure();
-            //    }
-            //}
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             IntCode machine2 = new IntCode(
                 name: "Star 2",
                 regs: regs,
-                fixedInputs: new long[0],
+                fixedInputs: Array.Empty<long>(),
                 input: Input2,
                 output: RenderOutput2);
 
@@ -87,13 +63,52 @@ namespace Day13
 
             machine2.SyncRun();
 
+            sw.Stop();
+
+            Console.WriteLine($"Follow Solution took: {sw.Elapsed}");
+
             Console.WriteLine($"The answer is: {score}");
 
             Console.WriteLine();
             Console.ReadKey();
         }
 
-        static int score = 0;
+        static void TryTreeMethod(long[] regs)
+        {
+            // Ineffective Tree solution left for Posterity's sake
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            MoveTree moveTree = new MoveTree();
+            while (true)
+            {
+                tileMap.Clear();
+                inputStage = 0;
+
+                IntCode machine2 = new IntCode(
+                    name: "Star 2",
+                    regs: regs,
+                    fixedInputs: Array.Empty<long>(),
+                    input: moveTree.NextMove,
+                    output: RenderOutput1);
+
+                machine2[0] = 2;
+
+                machine2.SyncRun();
+
+                if (tileMap.Values.Where(x => x == 2).Count() == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    moveTree.MarkFailure();
+                }
+            }
+            sw.Stop();
+            Console.WriteLine($"Tree Solution took: {sw.Elapsed}");
+            Console.WriteLine($"The answer is: {score}");
+        }
+
 
         static void RenderOutput1(long value)
         {
@@ -196,18 +211,21 @@ namespace Day13
 
         private MoveNode currentNode = null;
 
+        int recordDepth = 0;
+        int currentDepth = 0;
+
         public MoveTree()
         {
-            for (int move = -1; move <= 1; move++)
-            {
-                children.Add(new MoveNode(null, move));
-            }
+            children.Add(new MoveNode(null, 0));
+            children.Add(new MoveNode(null, -1));
+            children.Add(new MoveNode(null, 1));
         }
 
         public void MarkFailure()
         {
             currentNode.MarkDead();
             currentNode = null;
+            currentDepth = 0;
         }
 
         public long NextMove()
@@ -226,6 +244,12 @@ namespace Day13
             else
             {
                 currentNode = currentNode.NextAvailableChild();
+            }
+
+            if (++currentDepth > recordDepth)
+            {
+                recordDepth = currentDepth;
+                Console.WriteLine($"New Record Depth: {currentDepth}");
             }
 
             return currentNode.direction;
@@ -271,9 +295,16 @@ namespace Day13
 
         public void PopulateChildren()
         {
-            for (int i = -1; i <= 1; i++)
+            children.Add(new MoveNode(this, direction));
+            if (direction == 0)
             {
-                children.Add(new MoveNode(this, i));
+                children.Add(new MoveNode(this, 1));
+                children.Add(new MoveNode(this, -1));
+            }
+            else
+            {
+                children.Add(new MoveNode(this, 0));
+                children.Add(new MoveNode(this, -direction));
             }
         }
 
