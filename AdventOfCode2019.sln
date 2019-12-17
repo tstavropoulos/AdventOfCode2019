@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day15 - Oxygen System", "Da
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day16 - Flawed Frequency Transmission", "Day16\Day16 - Flawed Frequency Transmission.csproj", "{B6180DBC-B886-4014-BC41-A52B91056995}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day17", "Day17\Day17.csproj", "{4D95E0E8-F7E4-41AE-8BC4-0AF6BA72C319}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day17 - Set and Forget", "Day17\Day17 - Set and Forget.csproj", "{4D95E0E8-F7E4-41AE-8BC4-0AF6BA72C319}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day18", "Day18\Day18.csproj", "{0DA66AD0-4E66-4F20-907E-B2363E9348AD}"
 EndProject
