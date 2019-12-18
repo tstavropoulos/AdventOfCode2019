@@ -219,7 +219,9 @@ namespace Day17
                 }
             }
 
-            return string.Join(",", output);
+            string outputLine = string.Join(",", output);
+
+            return outputLine.Length <= 20 ? outputLine : null;
         }
 
 
