@@ -8,6 +8,14 @@ namespace AoCTools
     {
         #region Point2D Extensions
 
+        public static IEnumerable<Point2D> GetAdjacent(this Point2D point)
+        {
+            yield return point + Point2D.YAxis;
+            yield return point + Point2D.XAxis;
+            yield return point - Point2D.YAxis;
+            yield return point - Point2D.XAxis;
+        }
+
         public static Point2D MinCoordinate(this IEnumerable<Point2D> points)
         {
             int minX = int.MaxValue;

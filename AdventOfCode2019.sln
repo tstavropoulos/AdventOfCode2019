@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day16 - Flawed Frequency Tr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day17 - Set and Forget", "Day17\Day17 - Set and Forget.csproj", "{4D95E0E8-F7E4-41AE-8BC4-0AF6BA72C319}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day18", "Day18\Day18.csproj", "{0DA66AD0-4E66-4F20-907E-B2363E9348AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day18 - Many-Worlds Interpretation", "Day18\Day18 - Many-Worlds Interpretation.csproj", "{0DA66AD0-4E66-4F20-907E-B2363E9348AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day19", "Day19\Day19.csproj", "{E10366F0-6A6E-437E-94FE-63377D37CEA3}"
 EndProject
