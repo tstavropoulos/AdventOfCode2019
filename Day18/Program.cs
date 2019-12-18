@@ -21,6 +21,8 @@ namespace Day18
         static char[] allKeys;
         static int allKeysMask = 0;
         static Dictionary<(char lastKey, int keyState), int> bestKeyRemainder = new Dictionary<(char lastKey, int keyState), int>();
+        static Dictionary<char, int> keyAssignment = new Dictionary<char, int>();
+        static Dictionary<(string lastKeys, int keyState), int> bestQuadKeyRemainder = new Dictionary<(string lastKeys, int keyState), int>();
         static Point2D startingPoint = Point2D.Zero;
         static Point2D[] robotStartingPoints = new Point2D[4];
 
@@ -91,7 +93,7 @@ namespace Day18
 
             BuildKeyReqs();
             BuildKeyDistances();
-            int shortest = GetShortestPath2('0', 0);
+            int shortest = GetShortestPath('0', 0);
             Console.WriteLine($"The answer is: {shortest}");
 
             Console.WriteLine();
@@ -109,12 +111,11 @@ namespace Day18
             grid[startingPoint.x, startingPoint.y + 1] = Square.Wall;
             grid[startingPoint.x, startingPoint.y - 1] = Square.Wall;
 
-            int output2 = 0;
+            BuildQuadKeyDistances();
 
+            int shortest2 = GetShortestPath("1234", 0);
 
-
-            Console.WriteLine($"The answer is: {output2}");
-
+            Console.WriteLine($"The answer is: {shortest2}");
 
             Console.WriteLine();
             Console.ReadKey();
@@ -224,7 +225,63 @@ namespace Day18
             }
         }
 
-        static int GetShortestPath2(char lastKey, int keys)
+        static void BuildQuadKeyDistances()
+        {
+            keyDistances.Clear();
+
+            foreach (char key in allKeys)
+            {
+                movementGrid.Clear();
+
+                Queue<Point2D> pendingPoints = new Queue<Point2D>();
+                pendingPoints.Enqueue(reverseKeyDict[key]);
+                movementGrid.Add(reverseKeyDict[key], 0);
+
+                while (pendingPoints.Count > 0)
+                {
+                    Point2D next = pendingPoints.Dequeue();
+                    int distance = movementGrid[next] + 1;
+
+                    foreach (Point2D adj in next.GetAdjacent())
+                    {
+                        Square value = grid[adj.x, adj.y];
+                        if (value == Square.Open || value == Square.Key || value == Square.Door)
+                        {
+                            //Can enter
+                            if (movementGrid.GetValueOrDefault(adj, int.MaxValue) > distance)
+                            {
+                                //Update
+                                movementGrid[adj] = distance;
+                                if (!pendingPoints.Contains(adj))
+                                {
+                                    pendingPoints.Enqueue(adj);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (movementGrid.ContainsKey(robotStartingPoints[i]))
+                    {
+                        keyDistances[((char)('1' + i), key)] = movementGrid[robotStartingPoints[i]];
+                        keyAssignment[key] = i;
+                        break;
+                    }
+                }
+
+                foreach (char key2 in allKeys)
+                {
+                    if (movementGrid.ContainsKey(reverseKeyDict[key2]))
+                    {
+                        keyDistances[(key, key2)] = movementGrid[reverseKeyDict[key2]];
+                    }
+                }
+            }
+        }
+
+        static int GetShortestPath(char lastKey, int keys)
         {
             if (bestKeyRemainder.ContainsKey((lastKey, keys)))
             {
@@ -239,19 +296,49 @@ namespace Day18
             var options = allKeys
                 .Where(c => (keys & (1 << (c - 'A'))) == 0)
                 .Where(c => (keys | keyReq[c]) == keys)
-                .Select(c => (c, keyDistances[(lastKey, c)]))
-                .OrderBy(x => x.Item2);
+                .Select(c => (c, keyDistances[(lastKey, c)]));
 
             int shortestDistance = int.MaxValue;
 
             foreach ((char key, int distance) in options)
             {
                 keys |= 1 << (key - 'A');
-                shortestDistance = Math.Min(shortestDistance, distance + GetShortestPath2(key, keys));
+                shortestDistance = Math.Min(shortestDistance, distance + GetShortestPath(key, keys));
                 keys &= ~(1 << (key - 'A'));
             }
 
             bestKeyRemainder[(lastKey, keys)] = shortestDistance;
+
+            return shortestDistance;
+        }
+
+        static int GetShortestPath(string lastKeys, int keys)
+        {
+            if (bestQuadKeyRemainder.ContainsKey((lastKeys, keys)))
+            {
+                return bestQuadKeyRemainder[(lastKeys, keys)];
+            }
+
+            if (keys == allKeysMask)
+            {
+                return 0;
+            }
+
+            var options = allKeys
+                .Where(c => (keys & (1 << (c - 'A'))) == 0)
+                .Where(c => (keys | keyReq[c]) == keys)
+                .Select(c => (c, keyDistances[(lastKeys[keyAssignment[c]], c)]));
+
+            int shortestDistance = int.MaxValue;
+
+            foreach ((char key, int distance) in options)
+            {
+                keys |= 1 << (key - 'A');
+                shortestDistance = Math.Min(shortestDistance, distance + GetShortestPath(lastKeys.Replace(lastKeys[keyAssignment[key]], key), keys));
+                keys &= ~(1 << (key - 'A'));
+            }
+
+            bestQuadKeyRemainder[(lastKeys, keys)] = shortestDistance;
 
             return shortestDistance;
         }
