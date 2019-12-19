@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day17 - Set and Forget", "D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day18 - Many-Worlds Interpretation", "Day18\Day18 - Many-Worlds Interpretation.csproj", "{0DA66AD0-4E66-4F20-907E-B2363E9348AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day19", "Day19\Day19.csproj", "{E10366F0-6A6E-437E-94FE-63377D37CEA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day19 - Tractor Beam", "Day19\Day19 - Tractor Beam.csproj", "{E10366F0-6A6E-437E-94FE-63377D37CEA3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Day20", "Day20\Day20.csproj", "{4B8A1BFC-AD2F-491B-83C6-38A8D38F07EE}"
 EndProject
