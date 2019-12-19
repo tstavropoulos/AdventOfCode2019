@@ -14,17 +14,19 @@ namespace Day18
         static Dictionary<Point2D, int> movementGrid;
         static Dictionary<Point2D, char> keyDict = new Dictionary<Point2D, char>();
         static Dictionary<Point2D, char> doorDict = new Dictionary<Point2D, char>();
-        static Dictionary<char, Point2D> reverseDoorDict = new Dictionary<char, Point2D>();
         static Dictionary<char, Point2D> reverseKeyDict = new Dictionary<char, Point2D>();
-        static Dictionary<char, int> keyReq = new Dictionary<char, int>();
-        static Dictionary<(char, char), int> keyDistances = new Dictionary<(char, char), int>();
+        static int allKeysMask;
         static char[] allKeys;
-        static int allKeysMask = 0;
-        static Dictionary<(char lastKey, int keyState), int> bestKeyRemainder = new Dictionary<(char lastKey, int keyState), int>();
-        static Dictionary<char, int> keyAssignment = new Dictionary<char, int>();
-        static Dictionary<(string lastKeys, int keyState), int> bestQuadKeyRemainder = new Dictionary<(string lastKeys, int keyState), int>();
+
+        static Dictionary<(char, char), int> keyDistances = new Dictionary<(char, char), int>();
         static Point2D startingPoint = Point2D.Zero;
+        static Dictionary<(char lastKey, int keyState), int> bestKeyRemainder = new Dictionary<(char lastKey, int keyState), int>();
+
+
+        static Dictionary<char, int> keyReq = new Dictionary<char, int>();
+        static Dictionary<char, int> keyAssignment = new Dictionary<char, int>();
         static Point2D[] robotStartingPoints = new Point2D[4];
+        static Dictionary<QuadState, int> bestQuadKeyRemainder = new Dictionary<QuadState, int>();
 
         enum Square
         {
@@ -70,7 +72,6 @@ namespace Day18
                     {
                         grid[x, y] = Square.Door;
                         doorDict[(x, y)] = c;
-                        reverseDoorDict[c] = (x, y);
                     }
                     else if (c == '@')
                     {
@@ -87,13 +88,10 @@ namespace Day18
             allKeys = reverseKeyDict.Keys.ToArray();
             allKeysMask = (1 << allKeys.Length) - 1;
 
-            //Print Central Room Colored
-            //PrintRoom(startingPoint, new HashSet<char>());
-
-
             BuildKeyReqs();
             BuildKeyDistances();
             int shortest = GetShortestPath('0', 0);
+
             Console.WriteLine($"The answer is: {shortest}");
 
             Console.WriteLine();
@@ -113,12 +111,32 @@ namespace Day18
 
             BuildQuadKeyDistances();
 
-            int shortest2 = GetShortestPath("1234", 0);
 
-            Console.WriteLine($"The answer is: {shortest2}");
+            Console.WriteLine($"The robust answer is: {GetShortestPath("1234")}");
+
+            int[] robotKeysMasks = new int[4];
+
+            for (int i = 0; i < 4; i++)
+            {
+                robotKeysMasks[i] = allKeysMask;
+            }
+
+            foreach (char key in allKeys)
+            {
+                robotKeysMasks[keyAssignment[key]] &= ~(1 << (key - 'A'));
+            }
+
+            int newShortest = 0;
+
+            for (int i = 0; i < 4; i++)
+            {
+                newShortest += GetShortestPath((char)('1' + i), robotKeysMasks[i]);
+            }
+
+            Console.WriteLine($"The sum of naive segments answer is: {newShortest}");
 
             Console.WriteLine();
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         static void BuildKeyReqs()
@@ -228,6 +246,7 @@ namespace Day18
         static void BuildQuadKeyDistances()
         {
             keyDistances.Clear();
+            bestKeyRemainder.Clear();
 
             foreach (char key in allKeys)
             {
@@ -312,106 +331,89 @@ namespace Day18
             return shortestDistance;
         }
 
-        static int GetShortestPath(string lastKeys, int keys)
+        static int GetShortestPath(in QuadState lastKeys)
         {
-            if (bestQuadKeyRemainder.ContainsKey((lastKeys, keys)))
+            if (bestQuadKeyRemainder.ContainsKey(lastKeys))
             {
-                return bestQuadKeyRemainder[(lastKeys, keys)];
+                return bestQuadKeyRemainder[lastKeys];
             }
 
-            if (keys == allKeysMask)
+            if (lastKeys.keys == allKeysMask)
             {
                 return 0;
             }
 
             var options = allKeys
-                .Where(c => (keys & (1 << (c - 'A'))) == 0)
-                .Where(c => (keys | keyReq[c]) == keys)
-                .Select(c => (c, keyDistances[(lastKeys[keyAssignment[c]], c)]));
+                .Where(lastKeys.IsUnused)
+                .Where(lastKeys.HasRequiredKeys);
 
             int shortestDistance = int.MaxValue;
 
-            foreach ((char key, int distance) in options)
+            foreach (char key in options)
             {
-                keys |= 1 << (key - 'A');
-                shortestDistance = Math.Min(shortestDistance, distance + GetShortestPath(lastKeys.Replace(lastKeys[keyAssignment[key]], key), keys));
-                keys &= ~(1 << (key - 'A'));
+                shortestDistance = Math.Min(shortestDistance, keyDistances[(lastKeys[keyAssignment[key]], key)] + GetShortestPath(lastKeys.GetWith(key)));
             }
 
-            bestQuadKeyRemainder[(lastKeys, keys)] = shortestDistance;
+            bestQuadKeyRemainder[lastKeys] = shortestDistance;
 
             return shortestDistance;
         }
 
-        static void PrintRoom(Point2D start, HashSet<char> obtainedKeys)
+        readonly struct QuadState
         {
-            Console.ReadLine();
-            movementGrid.Clear();
+            public readonly char a;
+            public readonly char b;
+            public readonly char c;
+            public readonly char d;
+            public readonly int keys;
 
-            Queue<Point2D> pendingPoints = new Queue<Point2D>();
-            pendingPoints.Enqueue(start);
-            movementGrid.Add(start, 0);
-
-            while (pendingPoints.Count > 0)
+            public QuadState(char a, char b, char c, char d, int keys)
             {
-                Point2D next = pendingPoints.Dequeue();
-                int distance = movementGrid[next] + 1;
-
-                foreach (Point2D adj in next.GetAdjacent())
-                {
-                    Square value = grid[adj.x, adj.y];
-                    if (value == Square.Open || value == Square.Key || (value == Square.Door && obtainedKeys.Contains(doorDict[adj])))
-                    {
-                        //Can enter
-                        if (movementGrid.GetValueOrDefault(adj, int.MaxValue) > distance)
-                        {
-                            //Update
-                            movementGrid[adj] = distance;
-                            if (!pendingPoints.Contains(adj))
-                            {
-                                pendingPoints.Enqueue(adj);
-                            }
-                        }
-                    }
-                }
+                this.a = a;
+                this.b = b;
+                this.c = c;
+                this.d = d;
+                this.keys = keys;
             }
 
-            Console.WriteLine();
-            for (int y = 0; y < grid.GetLength(1); y++)
+            public static implicit operator QuadState((char a, char b, char c, char d) value) =>
+                new QuadState(value.a, value.b, value.c, value.d, 0);
+
+            public static implicit operator QuadState(string value) =>
+                new QuadState(value[0], value[1], value[2], value[3], 0);
+
+            public readonly char this[int i] => i switch
             {
-                for (int x = 0; x < grid.GetLength(0); x++)
+                0 => a,
+                1 => b,
+                2 => c,
+                3 => d,
+                _ => throw new Exception(),
+            };
+
+            public readonly QuadState GetWith(char key) => keyAssignment[key] switch
+            {
+                0 => new QuadState(key, b, c, d, keys | (1 << (key - 'A'))),
+                1 => new QuadState(a, key, c, d, keys | (1 << (key - 'A'))),
+                2 => new QuadState(a, b, key, d, keys | (1 << (key - 'A'))),
+                3 => new QuadState(a, b, c, key, keys | (1 << (key - 'A'))),
+                _ => throw new Exception(),
+            };
+
+            public readonly override int GetHashCode() => HashCode.Combine(a, b, c, d, keys);
+            public readonly override bool Equals(object obj)
+            {
+                if (!(obj is QuadState other))
                 {
-                    switch (grid[x, y])
-                    {
-                        case Square.Open:
-                            Console.BackgroundColor = movementGrid.ContainsKey((x, y)) ? ConsoleColor.Red : ConsoleColor.Black;
-                            Console.Write(' ');
-                            break;
-
-                        case Square.Wall:
-                            Console.BackgroundColor = ConsoleColor.White;
-                            Console.Write(' ');
-                            break;
-
-                        case Square.Key:
-                            Console.BackgroundColor = movementGrid.ContainsKey((x, y)) ? ConsoleColor.Red : ConsoleColor.Black;
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.Write(keyDict[(x, y)]);
-                            break;
-
-                        case Square.Door:
-                            Console.BackgroundColor = ConsoleColor.Green;
-                            Console.ForegroundColor = ConsoleColor.Black;
-                            Console.Write(doorDict[(x, y)]);
-                            break;
-
-                        default:
-                            throw new Exception();
-                    }
+                    return false;
                 }
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.WriteLine();
+
+                return a == other.a && b == other.b && c == other.c && d == other.d && keys == other.keys;
             }
+
+            public readonly bool IsUnused(char key) => (keys & (1 << (key - 'A'))) == 0;
+            public readonly bool HasRequiredKeys(char key) => (keys | keyReq[key]) == keys;
         }
     }
+
 }
