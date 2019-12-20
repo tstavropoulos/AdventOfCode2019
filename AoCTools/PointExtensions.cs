@@ -73,6 +73,13 @@ namespace AoCTools
         #endregion Point2D Extensions
         #region Point3D Extensions
 
+        public static IEnumerable<Point3D> Get2DAdjacent(this Point3D point)
+        {
+            yield return point + Point3D.YAxis;
+            yield return point + Point3D.XAxis;
+            yield return point - Point3D.YAxis;
+            yield return point - Point3D.XAxis;
+        }
         public static Point3D MinCoordinate(this IEnumerable<Point3D> points)
         {
             int minX = int.MaxValue;
