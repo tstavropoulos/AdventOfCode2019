@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AoCTools;
+using AoCTools.IntCode;
 
 namespace Day23
 {
@@ -15,9 +17,15 @@ namespace Day23
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            string[] lines = File.ReadAllLines(inputFile);
+            long[] regs = File.ReadAllText(inputFile).Split(',').Select(long.Parse).ToArray();
 
+            IntCode machine = new IntCode(
+                name: "Star 1",
+                regs: regs,
+                fixedInputs: Array.Empty<long>(),
+                output: x => Console.Write(x));
 
+            machine.SyncRun();
 
             int output1 = 0;
 

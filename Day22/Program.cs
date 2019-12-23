@@ -11,7 +11,7 @@ namespace Day22
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 22");
+            Console.WriteLine("Day 22 - Slam Shuffle");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 

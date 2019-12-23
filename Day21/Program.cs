@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AoCTools;
+using AoCTools.IntCode;
 
 namespace Day21
 {
@@ -11,16 +13,40 @@ namespace Day21
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 21");
+            Console.WriteLine("Day 21 - Springdroid Adventure");
             Console.WriteLine("Star 1");
             Console.WriteLine();
 
-            string[] lines = File.ReadAllLines(inputFile);
+            long[] regs = File.ReadAllText(inputFile).Split(',').Select(long.Parse).ToArray();
+
+            //First test program:
+
+            // IF (!A or !B) && C -> Jump
+
+            //if !(A and B) && C -> Jump
 
 
+            string input =
+                "OR A T\n" +
+                "AND B T\n" +
+                "AND C T\n" +
+                "NOT T J\n" +
+                "AND D J\n" +
+                "WALK\n";
 
-            int output1 = 0;
+            long[] inputArray = input.Select(x => (long)x).ToArray();
 
+
+            long output1 = 0;
+
+            IntCode machine = new IntCode(
+                "Star 1",
+                regs,
+                fixedInputs: inputArray,
+                output: x => output1 = x);
+
+
+            machine.SyncRun();
 
 
             Console.WriteLine($"The answer is: {output1}");
@@ -29,8 +55,29 @@ namespace Day21
             Console.WriteLine("Star 2");
             Console.WriteLine();
 
+            string input2 =
+                "OR A T\n" +
+                "AND B T\n" +
+                "AND C T\n" +
+                "NOT T T\n" +
+                "AND D T\n" +
+                "OR E J\n" +
+                "OR H J\n" +
+                "AND T J\n" +
+                "RUN\n";
 
-            int output2 = 0;
+            long[] input2Array = input2.Select(x => (long)x).ToArray();
+
+            long output2 = 0;
+
+            IntCode machine2 = new IntCode(
+                "Star 2",
+                regs,
+                fixedInputs: input2Array,
+                output: x => output2 = x);
+
+
+            machine2.SyncRun();
 
 
 
